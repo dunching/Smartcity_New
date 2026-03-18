@@ -1,0 +1,19 @@
+{
+	"FileVersion": 1,
+	"Version": 1,
+	"VersionName": "1",
+	"FriendlyName": "Utils",
+	"Category": "Other",
+	"CreatedBy": "武侯笑笑生",	
+	"CanContainContent": true,
+	"Modules": [
+		{
+			"Name": "Utils",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"WhitelistPlatforms": [
+				"Win64"
+			]
+		}
+	]
+}

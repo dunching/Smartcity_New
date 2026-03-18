@@ -1,0 +1,387 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+class AHumanCharacter;
+
+namespace SmartCityCommand
+{
+	void ReplyCameraTransform();
+
+	static FAutoConsoleCommand ReplyCameraTransformCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("ReplyCameraTransform"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandDelegate::CreateStatic(ReplyCameraTransform),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void AdjustCameraSeat(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand AdjustCameraSeatCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("AdjustCameraSeat"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(AdjustCameraSeat),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SwitchInteractionType(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SwitchInteractionTypeCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("UpdateInteractionType"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SwitchInteractionType),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SwitchViewArea(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SwitchViewAreaCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SwitchViewArea"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SwitchViewArea),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SwitchMode(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SwitchModeCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SwitchMode"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SwitchMode),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SwitchInteraction(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SwitchInteractionCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SwitchInteraction"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SwitchInteraction),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void TestAssetUserData();
+
+	static FAutoConsoleCommand TestAssetUserDataCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("TestAssetUserData"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandDelegate::CreateStatic(TestAssetUserData),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void AddFeatureItem(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand AddFeatureItemCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("AddFeatureItem"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(AddFeatureItem),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void ElevatorMoveToFloor(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand ElevatorMoveToFloorcMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("ElevatorMoveToFloor"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(ElevatorMoveToFloor),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetSpaceFeature(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetSpaceFeatureCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetSpaceFeature"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetSpaceFeature),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetWallTranlucent(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetWallTranlucentCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetWallTranlucent"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetWallTranlucent),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetPillarTranlucent(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetPillarTranlucentCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetPillarTranlucent"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetPillarTranlucent),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetStairsTranlucent(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetStairsTranlucentCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetStairsTranlucent"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetStairsTranlucent),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetShowCurtainWall(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetShowCurtainWallCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetShowCurtainWall"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetShowCurtainWall),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetShowFurniture(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetShowFurnitureCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetShowFurniture"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetShowFurniture),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetCameraPitch(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetCameraPitchCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetCameraPitch"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetCameraPitch),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void LocaterByID(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand LocaterByIDCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("LocaterByID"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(LocaterByID),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void LocaterDeviceByID(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand LocaterDeviceByIDCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("LocaterDeviceByID"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(LocaterDeviceByID),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void LocaterSpaceByID(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand LocaterSpaceByIDCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("LocaterSpaceByID"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(LocaterSpaceByID),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void SetRelativeTransoform(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand SetRelativeTransoformCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("SetRelativeTransoform"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(SetRelativeTransoform),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void UpdateFloorDescription(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand UpdateFloorDescriptionCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("UpdateFloorDescription"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(UpdateFloorDescription),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void ViewSpeacialArea(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand ViewSpeacialAreaCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("ViewSpeacialArea"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(ViewSpeacialArea),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void UpdateSceneElementParam(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand UpdateSceneElementParamCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("UpdateSceneElementParam"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(UpdateSceneElementParam),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void UpdateSceneElementParamByArea(const TArray< FString >& Args);
+
+	static FAutoConsoleCommand UpdateSceneElementParamByAreaCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("UpdateSceneElementParamByArea"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(UpdateSceneElementParamByArea),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void UpdateAccessControl(const TArray< FString >& Args);
+
+	/**
+	 * 楼层，分组，状态
+	 */
+	static FAutoConsoleCommand UpdateAccessControlCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("UpdateAccessControl"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(UpdateAccessControl),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void AddTemperaturePt(const TArray< FString >& Args);
+
+	/**
+	 * 楼层，分组，状态
+	 */
+	static FAutoConsoleCommand AddTemperaturePtCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("AddTemperaturePt"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(AddTemperaturePt),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void ClearTemperaturePt(const TArray< FString >& Args);
+
+	/**
+	 * 楼层，分组，状态
+	 */
+	static FAutoConsoleCommand ClearTemperaturePtCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("ClearTemperaturePt"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(ClearTemperaturePt),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+	void TestMsg(const TArray< FString >& Args);
+
+	/**
+	 * 楼层，分组，状态
+	 */
+	static FAutoConsoleCommand TestMsgCMD(
+		//CMD 名字，在控制台输入这个调用
+		TEXT("TestMsg"),
+		//控制台帮助信息，选择这个命令的时候会看到
+		TEXT("this is a CMD test."),
+		//创建静态委托，输入上面的命令后会调用到后面的函数
+		FConsoleCommandWithArgsDelegate::CreateStatic(TestMsg),
+		//可选标志位掩码
+		EConsoleVariableFlags::ECVF_Default
+	);
+	
+};

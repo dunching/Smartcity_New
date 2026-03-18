@@ -1,0 +1,41 @@
+// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
+
+using UnrealBuildTool;
+
+public class GameOptions : ModuleRules
+{
+	public GameOptions(ReadOnlyTargetRules Target) : base(Target)
+    {
+        bUseUnity = false;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+        CppCompileWarningSettings.UndefinedIdentifierWarningLevel = WarningLevel.Error;
+        bWarningsAsErrors = true;
+        bEnableExceptions = true;
+
+        CppStandard = CppStandardVersion.Cpp20;
+        
+        bEnableExceptions = true;
+        bUseRTTI = false;
+
+        if (Target.Platform == UnrealTargetPlatform.Win64)
+        {
+        }
+
+        PublicIncludePaths.Add("GameOptions");
+        PublicIncludePaths.Add("GameOptions/GameOptions");
+
+        PrivateDependencyModuleNames.AddRange(new string[] {
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "GameplayTags",
+            "InputCore",
+        });
+
+        PublicDependencyModuleNames.AddRange(new string[] {
+        });
+
+        // b*[^:b#/]+.*$
+    }
+}

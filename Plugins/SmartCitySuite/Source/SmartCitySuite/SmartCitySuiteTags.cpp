@@ -1,0 +1,168 @@
+#include "SmartCitySuiteTags.h"
+
+#include <Subsystems/SubsystemBlueprintLibrary.h>
+
+namespace USmartCitySuiteTags
+{
+	UE_DEFINE_GAMEPLAY_TAG(Seat_0 ,"Seat.0");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_45 ,"Seat.45");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_90 ,"Seat.90");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_180 ,"Seat.180");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_Default ,"Seat.Default");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_ViewSplit ,"Seat.ViewSplit");
+
+	UE_DEFINE_GAMEPLAY_TAG(Seat_Periphery ,"Seat.Periphery");
+
+	
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_01 ,"Elevator.01");
+
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_02 ,"Elevator.02");
+
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_03 ,"Elevator.03");
+
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_04 ,"Elevator.04");
+
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_05 ,"Elevator.05");
+
+	UE_DEFINE_GAMEPLAY_TAG(Elevator_06 ,"Elevator.06");
+
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area ,"Interaction.Area");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_SpacialDataSmithActor_JF1 ,"Interaction.Area.SpacialDataSmithActor.JF1");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_SpacialDataSmithActor_JF2 ,"Interaction.Area.SpacialDataSmithActor.JF2");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_LandScape ,"Interaction.Area.LandScape");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Periphery ,"Interaction.Area.Periphery");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_ExternalWall ,"Interaction.Area.ExternalWall");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor ,"Interaction.Area.Floor");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_Roof ,"Interaction.Area.Floor.Roof");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F13 ,"Interaction.Area.Floor.F13");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F13Bathroom ,"Interaction.Area.Floor.F13Bathroom");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F13J ,"Interaction.Area.Floor.F13J");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F13Common ,"Interaction.Area.Floor.F13Common");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F13MultFunctionHall ,"Interaction.Area.Floor.F13MultFunctionHall");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F12 ,"Interaction.Area.Floor.F12");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F12JF ,"Interaction.Area.Floor.F12JF");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F12JF_1 ,"Interaction.Area.Floor.F12JF.1");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F12JF_2 ,"Interaction.Area.Floor.F12JF.2");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F12JF_3 ,"Interaction.Area.Floor.F12JF.3");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F2 ,"Interaction.Area.Floor.F2");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F1J ,"Interaction.Area.Floor.F1J");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F1Common ,"Interaction.Area.Floor.F1Common");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_F1 ,"Interaction.Area.Floor.F1");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Floor_B1 ,"Interaction.Area.Floor.B1");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Space ,"Interaction.Area.Space");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_ViewDevice ,"Interaction.Area.ViewDevice");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_Selectd ,"Interaction.Area.Selectd");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_SplitFloor,"Interaction.Area.SplitFloor");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Area_SpecialArea,"Interaction.Area.SpecialArea");
+
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode ,"Interaction.Mode");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_View ,"Interaction.Mode.View");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_Focus ,"Interaction.Mode.Focus");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_Empty ,"Interaction.Mode.Empty");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_Tour ,"Interaction.Mode.Tour");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_Scene,"Interaction.Mode.Scene");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger ,"Interaction.Mode.DeviceManagger");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_SunShadow ,"Interaction.Mode.DeviceManagger.SunShadow");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_RollerBlind ,"Interaction.Mode.DeviceManagger.RollerBlind");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_PWR ,"Interaction.Mode.DeviceManagger.PWR");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_PWR_Lighting,"Interaction.Mode.DeviceManagger.PWR.Lighting");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_PWR_HVAC,"Interaction.Mode.DeviceManagger.PWR.HVAC");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_PWR_Monitor,"Interaction.Mode.DeviceManagger.PWR.Monitor");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_ELV ,"Interaction.Mode.DeviceManagger.ELV");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_ELV_Radar ,"Interaction.Mode.DeviceManagger.ELV.Radar");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_DeviceManagger_ELV_AccessControl,"Interaction.Mode.DeviceManagger.ELV.AccessControl");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_ViewElevator,"Interaction.Mode.Elevator");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_EnvironmentalPerception,"Interaction.Mode.EnvironmentalPerception");
+	
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_EnergyManagement,"Interaction.Mode.EnergyManagement");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_EmergencySystem,"Interaction.Mode.EmergencySystem");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_Intelligence,"Interaction.Mode.Intelligence");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_BatchControl,"Interaction.Mode.BatchControl");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_SafeManagement,"Interaction.Mode.SafeManagement");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Mode_TemperatureMap,"Interaction.Mode.TemperatureMap");
+
+	
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Adtional,"Interaction.Adtional");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Adtional_BatchControl,"Interaction.Adtional.BatchControl");
+
+	
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Interaction,"Interaction.Interaction");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Interaction_Device,"Interaction.Interaction.Device");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Interaction_Space,"Interaction.Interaction.Space");
+
+	UE_DEFINE_GAMEPLAY_TAG(Interaction_Interaction_WallTranlucent,"Interaction.Interaction.WallTranlucent");
+
+
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_FanCoil,"SceneElement.FanCoil");
+
+	
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_Category,"SceneElement.Category");
+	
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_Category_AS,"SceneElement.Category.AS");
+	
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_Category_ID,"SceneElement.Category.ID");
+	
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_Category_Soft,"SceneElement.Category.Soft");
+	
+	UE_DEFINE_GAMEPLAY_TAG(SceneElement_Category_Space,"SceneElement.Category.Space");
+	
+}

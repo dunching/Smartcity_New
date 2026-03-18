@@ -1,0 +1,61 @@
+#include "GenerateTypes.h"
+
+TFSceneElementTypeHelperKeyFuncs::KeyInitType TFSceneElementTypeHelperKeyFuncs::GetSetKey(
+	ElementInitType Element
+	)
+{
+	return Element;
+}
+
+bool TFSceneElementTypeHelperKeyFuncs::Matches(
+	KeyInitType A,
+	KeyInitType B
+	)
+{
+	return (A.Key == B.Key) && (A.Value == B.Value);
+}
+
+uint32 TFSceneElementTypeHelperKeyFuncs::GetKeyHash(
+	KeyInitType Key
+	)
+{
+	return GetTypeHash(Key);
+}
+
+uint32 GetTypeHash(
+	const FSceneElementReplaceHelper& SceneElementTypeHelper
+	)
+{
+	return HashCombine(GetTypeHash(SceneElementTypeHelper.Key), GetTypeHash(SceneElementTypeHelper.Value));
+}
+
+uint32 GetTypeHash(
+	const FSceneElementMergeHelper& SceneElementTypeHelper
+	)
+{
+	return HashCombine(GetTypeHash(SceneElementTypeHelper.Key), GetTypeHash(SceneElementTypeHelper.Value));
+}
+
+uint32 GetTypeHash(
+	const FSceneElementManaggerMergeHelper& SceneElementTypeHelper
+	)
+{
+	return HashCombine(GetTypeHash(SceneElementTypeHelper.UniqueCode));
+}
+
+uint32 GetTypeHash(
+	const FSceneElementManaggerKeyHelper& SceneElementTypeHelper
+	)
+{
+	return HashCombine(GetTypeHash(SceneElementTypeHelper.FloorTag), GetTypeHash(SceneElementTypeHelper.Group));
+}
+
+uint32 GetTypeHash(
+	const FSceneSpace& SceneElementTypeHelper
+	)
+{
+	return HashCombine(
+	                   GetTypeHash(SceneElementTypeHelper.Key),
+	                   HashCombine(GetTypeHash(SceneElementTypeHelper.Value), GetTypeHash(SceneElementTypeHelper.SpaceNameValue))
+	                  );
+}

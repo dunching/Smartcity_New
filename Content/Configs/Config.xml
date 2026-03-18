@@ -1,0 +1,27 @@
+<Root>
+    <CMD CMDStr="sg.ShadowQuality" Value="0"/>
+    <CMD CMDStr="sg.PostProcessQuality" Value="0"/>
+    <CMD CMDStr="r.Lumen.GlobalIllumination" Value="0"/>
+    <CMD CMDStr="r.Lumen.Reflections" Value="0"/>
+    <CMD CMDStr="t.MaxFPS" Value="30"/>
+    
+    <Render>
+        <r.DynamicGlobalIlluminationMethod>
+            <Open>1</Open>
+            <Close>0</Close>
+        </r.DynamicGlobalIlluminationMethod>
+        <r.ReflectionMethod>
+            <Open>1</Open>
+            <Close>0</Close>
+        </r.ReflectionMethod>
+        <r.ShadowQuality>
+            <Open>5</Open>
+            <Close>0</Close>
+        </r.ShadowQuality>
+        <r.AmbientOcclusionLevels>
+            <Open>0</Open>
+            <Close>0</Close>
+        </r.AmbientOcclusionLevels>
+    </Render>
+    
+</Root>

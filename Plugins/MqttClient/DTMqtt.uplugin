@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "1.3",
+	"FriendlyName": "DTMqtt",
+	"Description": "DT Mqtt Client / UE5.5",
+	"Category": "DT",
+	"CreatedBy": "Dexter Wan",
+	"CreatedByURL": "45141961@qq.com",
+	"DocsURL": "https://www.fab.com/listings/64c55ea4-033b-42fa-86e8-c4fe7d57f44f",
+	"MarketplaceURL": "",
+	"SupportURL": "https://dt.cq.cn/",
+	"EngineVersion": "5.6.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "DTMqtt",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit",
+			"PlatformAllowList": [
+				"Win64",
+				"Linux",
+				"Android",
+				"Mac",
+				"IOS"
+			]
+		}
+	]
+}

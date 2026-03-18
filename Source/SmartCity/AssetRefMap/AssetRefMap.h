@@ -1,0 +1,245 @@
+// Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "GameplayTagContainer.h"
+
+#include "AssetRefBase.h"
+#include "GenerateTypes.h"
+#include "BuildingGenerateTypes.h"
+
+#include "AssetRefMap.generated.h"
+
+class AActor;
+class UDataLayerAsset;
+class ADatasmithSceneActor;
+class URouteMarker;
+class AFloorHelper;
+class ATowerHelperBase;
+class ALandScapeBase;
+class AElevator;
+class APostProcessVolume;
+class ASceneElementBase;
+class ASceneElementManaggerBase;
+class APersonMark;
+class AFireMark;
+class AWarningMark;
+class ASceneElement_Space;
+class UFeatureWheel;
+class ABuilding_Floor_Mask;
+class AFloorHelper_Description;
+class AViewerPawnBase;
+class ASceneElement_RollerBlind;
+class ASpace_VolumetricFog;
+class UStaticMesh;
+class UMaterialParameterCollection;
+class UAirQualityTips;
+
+UCLASS(BlueprintType, Blueprintable)
+class SMARTCITY_API UAssetRefMap : public UAssetRefBase
+{
+	GENERATED_BODY()
+
+public:
+	UAssetRefMap();
+
+	static UAssetRefMap* GetInstance();
+
+	/**
+	 * 将指定的ADatasmithSceneActor引用的Actor替换成指定类型的ASceneElementBase
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<TSoftObjectPtr<ADatasmithSceneActor>, TSubclassOf<ASceneElementBase>> NeedReplaceByRef;
+
+	/**
+	 * 将指定的ADatasmithSceneActor的用户数据的引用的Actor替换成指定类型的ASceneElementBase
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FSceneElementReplaceHelper, TSubclassOf<ASceneElementBase>> NeedReplaceByUserData;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FSceneElementMergeHelper, TSubclassOf<ASceneElementBase>> NeedMergeByUserData;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FSceneElementManaggerMergeHelper, TSubclassOf<ASceneElementManaggerBase>> SceneElementManaggerNeedMergeByUserData;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FSceneSpace SpaceInfo;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, FModeDecription> ModeDescription;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	 TSoftObjectPtr<APostProcessVolume> PostProcessVolume;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	 TSoftObjectPtr<APostProcessVolume> PostProcessVolume_Elevator;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	 TSoftObjectPtr<APostProcessVolume> PostProcessVolume_TemperatureMap;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	 int32 TemperatureMapMaxCount = 8;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	int32 ViewLightingTime = 20;
+
+#pragma region 场景Actor
+
+#pragma endregion
+
+#pragma region 建筑信息
+	/**
+	 * 层数
+	 * 对应的Floor
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, TSoftObjectPtr<AFloorHelper>> FloorHelpers;
+
+	/**
+	 * 楼宇号
+	 * 对应的楼宇
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, TSoftObjectPtr<ATowerHelperBase>> BuildingHelpers;
+
+	/**
+	 * 外景
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, TSoftObjectPtr<ALandScapeBase>> LandScapeHelper;
+
+	/**
+	 * 需要单独处理的资源集
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, FSceneElementMap> SpecialDatasmith;
+
+#pragma endregion
+
+#pragma region 电梯
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FGameplayTag, TSoftObjectPtr<AElevator>> ElevatorMap;
+#pragma endregion
+
+#pragma region DataSmith
+	/**
+	 * 设备ID的前缀
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FString Datasmith_UniqueId;
+
+	/**
+	 * 设备名称的Key
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSet<FString> NamePrifix;
+#pragma endregion
+
+#pragma region 引用
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FName SpaceMaterialColorName = TEXT("BarrierColorPrimary");
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TSoftObjectPtr<AViewerPawnBase> ViewElevatorCameraSeat;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> SpaceMaterialInstance;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ASceneElement_Space> SceneElement_SpaceClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<URouteMarker> SpaceRouteMarkerClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<URouteMarker> RouteMarkerClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<APersonMark> PersonMarkClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<AFireMark> FireMarkClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<AWarningMark> WarningMarkClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UAirQualityTips> AirQualityTipsClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> EnergyPipeMaterialInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> EnergyDeviceMaterialInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> WallTranslucentMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> PillarTranslucentMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> StairsTranslucentMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> CurtainWallTranslucentMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> FurnitureTranslucentMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> ViewElevatorPostMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> ViewElevatorMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialInstance> ViewTempporatureMapMatInst;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UStaticMesh> RadarOnline;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UStaticMesh> RadarOffline;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UStaticMesh> RadarQueryFailed;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UStaticMesh> FloorSTM;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UStaticMesh> TemporatureSTM;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialParameterCollection> SmartCityMCRef;
+
+	/**
+	 * A 接受0~99999999，0表示无热点；前四位表示范围；后四位表示热量值，热量值为1~1000
+	 */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSoftObjectPtr<UMaterialParameterCollection> TemperatureMapMCRef;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<UFeatureWheel> FeatureWheelClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ABuilding_Floor_Mask> Building_Floor_MaskClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<AFloorHelper_Description> FloorHelper_DescriptionClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ASceneElement_RollerBlind> SceneElement_RollerBlindClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ASpace_VolumetricFog> SceneElement_Space_VolumetricFogClass;
+
+#pragma endregion
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TMap<FString, FString> ParamJson;
+
+};

@@ -1,0 +1,69 @@
+// Some copyright should be here...
+
+using System.IO;
+using UnrealBuildTool;
+
+public class StateProcessor : ModuleRules
+{
+	public StateProcessor(ReadOnlyTargetRules Target) : base(Target)
+	{
+		bUseUnity = false;
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+
+		CppStandard = CppStandardVersion.Cpp20;
+
+		bUseRTTI = false;
+
+		PublicIncludePaths.AddRange(
+			new string[] {
+				// ... add public include paths required here ...
+				Path.Combine(PluginDirectory, "Source/StateProcessor"),
+				Path.Combine(PluginDirectory, "Source/InputActions"),
+			}
+			);
+				
+		
+		PrivateIncludePaths.AddRange(
+			new string[] {
+				// ... add other private include paths required here ...
+			}
+			);
+			
+		
+		PublicDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"Core",
+				// ... add other public dependencies that you statically link with here ...
+				"CoreUObject",
+				"Engine",
+				"Slate",
+				"SlateCore",
+				"UMG",
+				"InputCore",
+				"EnhancedInput",
+			}
+			);
+			
+		
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"XmlParser",
+				
+				// ... add private dependencies that you statically link with here ...	
+				"Utils", 
+			}
+			);
+		
+		
+		DynamicallyLoadedModuleNames.AddRange(
+			new string[]
+			{
+				// ... add any modules that your module loads dynamically here ...
+			}
+			);
+	}
+}

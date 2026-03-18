@@ -1,0 +1,420 @@
+#include "SceneElement_PWR_Pipe.h"
+
+#include "Engine/OverlapResult.h"
+#include "Engine/StaticMeshActor.h"
+#include "Kismet/KismetStringLibrary.h"
+#include "Components/BoxComponent.h"
+
+#include "AssetRefMap.h"
+#include "CollisionDataStruct.h"
+#include "DatasmithAssetUserData.h"
+#include "FeatureWheel.h"
+#include "GameplayTagsLibrary.h"
+#include "MainHUD.h"
+#include "MainHUDLayout.h"
+#include "SceneElementTools.h"
+#include "SceneElement_DeviceBase.h"
+#include "SceneInteractionWorldSystem.h"
+#include "SmartCitySuiteTags.h"
+#include "Algorithm.h"
+
+ASceneElement_PWR_Pipe::ASceneElement_PWR_Pipe(
+	const FObjectInitializer& ObjectInitializer
+	) :
+	  Super(ObjectInitializer)
+{
+	CollisionComponentHelper->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ASceneElement_PWR_Pipe::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+FBox ASceneElement_PWR_Pipe::GetComponentsBoundingBox(
+	bool bNonColliding,
+	bool bIncludeFromChildActors
+	) const
+{
+	FBox Box(ForceInit);
+
+	for (auto Iter : StaticMeshComponentsAry)
+	{
+		if (Iter->IsRegistered() && (bNonColliding || Iter->IsCollisionEnabled()))
+		{
+			Box += Iter->Bounds.GetBox();
+		}
+	}
+	
+	return Box;
+}
+
+void ASceneElement_PWR_Pipe::ReplaceImp(
+	AActor* ActorPtr,
+	const TPair<FName, FString>& InUserData
+	)
+{
+	Super::ReplaceImp(ActorPtr, InUserData);
+
+}
+
+void ASceneElement_PWR_Pipe::Merge(
+	const TSoftObjectPtr<AActor>& ActorRef,
+	const TPair<FName, FString>& InUserData
+	, const TMap<FName, FString>& NewUserData
+	)
+{
+	Super::Merge(ActorRef, InUserData, NewUserData);
+
+	CurrentUserData = InUserData;
+
+	SceneElementID = CurrentUserData.Value;
+
+	if (ActorRef.ToSoftObjectPath().IsValid())
+	{
+		auto STPtr = Cast<AStaticMeshActor>(ActorRef.Get());
+		if (STPtr)
+		{
+			auto InterfacePtr = Cast<IInterface_AssetUserData>(STPtr->GetStaticMeshComponent());
+			if (!InterfacePtr)
+			{
+				return;
+			}
+			auto AUDPtr = Cast<UDatasmithAssetUserData>(
+			                                            InterfacePtr->GetAssetUserDataOfClass(
+				                                             UDatasmithAssetUserData::StaticClass()
+				                                            )
+			                                           );
+
+			CheckIsJiaCeng(AUDPtr);
+
+			auto Transform =
+				STPtr->GetStaticMeshComponent()->
+				       GetComponentTransform();
+			
+			auto NewComponentPtr = Cast<UStaticMeshComponent>(
+			                                                  AddComponentByClass(
+				                                                   UStaticMeshComponent::StaticClass(),
+				                                                   true,
+				                                                   Transform,
+				                                                   false
+				                                                  )
+			                                                 );
+
+			NewComponentPtr->AddAssetUserData(AUDPtr);
+
+			NewComponentPtr->SetStaticMesh(STPtr->GetStaticMeshComponent()->GetStaticMesh());
+			for (int32 Index = 0; Index < STPtr->GetStaticMeshComponent()->GetNumMaterials(); Index++)
+			{
+				NewComponentPtr->SetMaterial(Index, STPtr->GetStaticMeshComponent()->GetMaterial(Index));
+			}
+
+			NewComponentPtr->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+
+			NewComponentPtr->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			NewComponentPtr->SetCollisionObjectType(Device_Object);
+			NewComponentPtr->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+			NewComponentPtr->SetCollisionResponseToChannel(ExternalWall_Object, ECollisionResponse::ECR_Overlap);
+			NewComponentPtr->SetCollisionResponseToChannel(Floor_Object, ECollisionResponse::ECR_Overlap);
+			NewComponentPtr->SetCollisionResponseToChannel(Space_Object, ECollisionResponse::ECR_Overlap);
+
+			NewComponentPtr->SetRenderCustomDepth(false);
+
+			StaticMeshComponentsAry.Add(NewComponentPtr);
+		}
+
+		ActorRef->Destroy();
+	}
+}
+
+void ASceneElement_PWR_Pipe::SwitchInteractionType(
+	const FSceneElementConditional& ConditionalSet
+	)
+{
+	 Super::SwitchInteractionType(ConditionalSet);
+
+	if (ProcessJiaCengLogic(ConditionalSet))
+	{
+		SetActorHiddenInGame(true);
+		return;
+	}
+
+	{
+		if (
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Area_ExternalWall) ||
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Area_Periphery)
+		)
+		{
+			QuitAllState();
+
+			return;
+		}
+	}
+	
+	{
+		auto EmptyContainer = FGameplayTagContainer::EmptyContainer;
+
+		EmptyContainer.AddTag(USmartCitySuiteTags::Interaction_Area_Floor);
+		EmptyContainer.AddTag(USmartCitySuiteTags::Interaction_Mode_EnergyManagement);
+
+		if (ConditionalSet.ConditionalSet.HasAll(EmptyContainer) && ConditionalSet.ConditionalSet.Num() ==
+		    EmptyContainer.Num())
+		{
+			// if (!ExtensionParamMap.Contains(TEXT("value")))
+			// {
+			// 	EnergyValue = FMath::RandRange(1.f,1000.f) / 1000.f;
+			// 	
+			// 	ExtensionParamMap.Add(TEXT("value"), FString::SanitizeFloat(EnergyValue));
+			// 	
+			// 	EntryShoweviceEffect();
+			//
+			// 	ExtensionParamMap.Remove(TEXT("value"));
+			// 	return;
+			// }
+			
+			EntryShoweviceEffect();
+			return;
+		}
+	}
+	{
+		if (
+			(ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
+			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)) &&
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Mode_DeviceManagger_PWR)
+		)
+		{
+			EntryShoweviceEffect();
+			return;
+		}
+	}
+	{
+		if (
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Mode_BatchControl)
+		)
+		{
+			EntryShoweviceEffect();
+			return;
+		}
+	}
+	{
+		if (
+			(ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
+			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)) &&
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Mode_View)
+		)
+		{
+			EntryViewDevice();
+			return;
+		}
+	}
+	{
+		if (
+			(ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
+			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)) &&
+			ConditionalSet.ConditionalSet.HasTagExact(USmartCitySuiteTags::Interaction_Mode_DeviceManagger)
+		)
+		{
+			EntryShowDevice();
+			return;
+		}
+	}
+	{
+		if (
+			(ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
+			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)) &&
+			ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Mode)
+		)
+		{
+			EntryShowDevice();
+
+			return;
+		}
+	}
+	{
+		auto EmptyContainer = FGameplayTagContainer::EmptyContainer;
+
+		EmptyContainer.AddTag(USmartCitySuiteTags::Interaction_Area_Floor);
+
+		if (ConditionalSet.ConditionalSet.HasAll(EmptyContainer) && ConditionalSet.ConditionalSet.Num() ==
+		    EmptyContainer.Num())
+		{
+			EntryShowDevice();
+			return;
+		}
+	}
+	{
+		auto EmptyContainer = FGameplayTagContainer::EmptyContainer;
+
+		EmptyContainer.AddTag(USmartCitySuiteTags::Interaction_Mode_Focus.GetTag());
+
+		if (ConditionalSet.ConditionalSet.HasAll(EmptyContainer) && ConditionalSet.ConditionalSet.Num() ==
+		    EmptyContainer.Num())
+		{
+			EntryFocusDevice();
+			return;
+		}
+	}
+	{
+		if (ConditionalSet.ConditionalSet.IsEmpty())
+		{
+		}
+
+		QuitAllState();
+
+		return;
+	}
+}
+
+FString ASceneElement_PWR_Pipe::GetID() const
+{
+	if (
+		(CurrentUserData.Key == TEXT("Element*照明回路编号")) ||
+		(CurrentUserData.Key == TEXT("Element*设备回路编号")) ||
+		(CurrentUserData.Key == TEXT("Element*空调和新风回路编号"))
+	)
+	{
+		return CurrentUserData.Value;
+	}
+	if (
+		(CurrentUserData.Key == TEXT("Element*管线类型编号"))
+	)
+	{
+		return CurrentUserData.Value;
+	}
+
+	return TEXT("");
+}
+
+void ASceneElement_PWR_Pipe::InitialSceneElement()
+{
+	Super::InitialSceneElement();
+	
+	USceneInteractionWorldSystem::GetInstance()->SetSceneActor(DeviceTypeStr, this);
+}
+
+void ASceneElement_PWR_Pipe::EntryFocusDevice()
+{
+	Super::EntryFocusDevice();
+	SetActorHiddenInGame(false);
+
+	auto PrimitiveComponentPtr = GetComponentByClass<UPrimitiveComponent>();
+	if (PrimitiveComponentPtr)
+	{
+		PrimitiveComponentPtr->SetRenderCustomDepth(true);
+		PrimitiveComponentPtr->SetCustomDepthStencilValue(UGameOptions::GetInstance()->FocusOutline);
+	}
+}
+
+void ASceneElement_PWR_Pipe::EntryViewDevice()
+{
+	Super::EntryViewDevice();
+	
+	SetActorHiddenInGame(false);
+	RevertOnriginalMat();
+}
+
+void ASceneElement_PWR_Pipe::EntryShowDevice()
+{
+	Super::EntryShowDevice();
+	
+	SetActorHiddenInGame(false);
+	RevertOnriginalMat();
+	
+}
+
+void ASceneElement_PWR_Pipe::EntryShoweviceEffect()
+{
+	Super::EntryShoweviceEffect();
+	
+	if (
+		(CurrentUserData.Key == TEXT("Element*照明回路编号")) ||
+		(CurrentUserData.Key == TEXT("Element*设备回路编号")) ||
+		(CurrentUserData.Key == TEXT("Element*管线类型编号")) ||
+		(CurrentUserData.Key == TEXT("Element*空调和新风回路编号"))
+	)
+	{
+		SetActorHiddenInGame(false);
+		
+		if (ExtensionParamMap.Contains(TEXT("value")))
+		{
+			CacheOriginalMat(StaticMeshComponentsAry);
+
+			auto EnergyMaterialInst = UAssetRefMap::GetInstance()->EnergyPipeMaterialInst.LoadSynchronous();
+
+			UMaterialInstanceDynamic * DynamicMID = nullptr;
+			if (PWR_DynamicMIDAry.IsEmpty())
+			{
+				DynamicMID = UMaterialInstanceDynamic::Create(EnergyMaterialInst, this);
+		
+				DynamicMID->SetScalarParameterValue(TEXT("EnergyValue"), EnergyValue);
+			
+				PWR_DynamicMIDAry.Add(DynamicMID);
+			}
+			else
+			{
+				for (auto Iter : PWR_DynamicMIDAry)
+				{
+					DynamicMID = Iter;
+					break;
+				}
+			}
+			
+			for (auto Iter : StaticMeshComponentsAry)
+			{
+				if (Iter)
+				{
+					for (int32 Index = 0; Index < Iter->GetNumMaterials(); Index++)
+					{
+						Iter->SetMaterial(Index, DynamicMID);
+					}
+				}
+			}
+
+			return;
+		}
+	}
+	else
+	{
+	}
+
+	EntryShowDevice();
+}
+
+void ASceneElement_PWR_Pipe::QuitAllState()
+{
+	Super::QuitAllState();
+
+	SetActorHiddenInGame(true);
+
+	RevertOnriginalMat();
+}
+
+void ASceneElement_PWR_Pipe::CheckIsJiaCeng(
+	UDatasmithAssetUserData* AUDPtr
+	)
+{
+	bIsJiaCengg = USceneElementTools::CheckIsJiaCeng(AUDPtr);
+}
+
+void ASceneElement_PWR_Pipe::UpdateExtensionParamMap(
+	const TMap<FString, FString>& NewExtensionParamMap,
+	bool bImmediatelyUpdate
+	)
+{
+	Super::UpdateExtensionParamMap(NewExtensionParamMap, bImmediatelyUpdate);
+	
+	if (ExtensionParamMap.Contains(TEXT("value")))
+	{
+		const auto TempEnergyValue = UKismetStringLibrary::Conv_StringToInt(ExtensionParamMap[TEXT("value")]);
+
+		EnergyValue = FMath::Clamp(TempEnergyValue,0,1000.f) / 1000.f;
+	}
+}
+
+void ASceneElement_PWR_Pipe::RevertOnriginalMat()
+{
+	Super::RevertOnriginalMat();
+	
+	PWR_DynamicMIDAry.Empty();
+}

@@ -1,0 +1,74 @@
+
+Linux环境部署
+像素流：
+node cirrus.js --HttpPort=8080 --StreamerPort=9001 --SFUPort=8889
+
+UE:
+找到依赖  find ~/WorkSpace/OutDir/SmartCity_Linux -name libdxcompiler.so
+添加变量 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/WorkSpace/OutDir/SmartCity_Linux/Linux/Engine/Binaries/ThirdParty/ShaderConductor/Linux/x86_64-unknown-linux-gnu
+  
+授权 Chmod +x  SmartCity-Linux-Shipping
+  
+
+Windwos：
+一个程序大约需要占用17GB，注意分配虚拟内存
+
+启动命令附加参数
+    -PixelStreamingPort=825 -AllowPixelStreamingCommands -log -RenderOffScreen -PixelStreamingIP=localhost -PixelStreamingWebRTCMaxFps=24 -PixelStreamingEncoderCodec=VP9
+
+
+用PowerShell：
+
+启动
+Start-Process "SmartCity-Win64-Shipping.exe" `
+ "-PixelStreamingIP=localhost -PixelStreamingPort=8888"
+
+Start-Process "SmartCity-Win64-Shipping.exe" `
+ " -PixelStreamingPort=825 -AllowPixelStreamingCommands -log -RenderOffScreen -PixelStreamingIP=localhost -PixelStreamingWebRTCMaxFps=24"
+
+
+// 设置关联性
+// 四个核心
+$masks = @(0xF, 0xF0,0XF00,0XF000,0XF0000)
+
+$procs = Get-Process SmartCity-Win64-Shipping
+
+for ($i = 0; $i -lt $procs.Count; $i++) {
+    $procs[$i].ProcessorAffinity = $masks[$i]
+}
+
+// 五个核心
+$masks = @(0X1F,0X3E0,0X7C00,0XF8000,0X1F00000)
+
+$procs = Get-Process SmartCity-Win64-Shipping
+
+for ($i = 0; $i -lt $procs.Count; $i++) {
+    $procs[$i].ProcessorAffinity = $masks[$i]
+}
+
+$masks = @(0X1F,0X3E0,0X7C00,0XF8000)
+
+$procs = Get-Process SmartCity-Win64-Shipping
+
+for ($i = 0; $i -lt $procs.Count; $i++) {
+    $procs[$i].ProcessorAffinity = $masks[$i]
+}
+
+结束任务
+taskkill /IM SmartCity-Win64-Shipping.exe /F
+
+UE流地址
+10.10.9.156:201
+10.10.9.156:602
+10.10.9.156:603
+10.10.9.156:604
+
+10.10.9.158:201
+10.10.9.158:602
+10.10.9.158:603
+10.10.9.158:604
+
+10.10.9.159:201
+10.10.9.159:602
+10.10.9.159:603
+10.10.9.159:604

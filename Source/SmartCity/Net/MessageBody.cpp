@@ -1,0 +1,1537 @@
+#include "MessageBody.h"
+
+#include "GameFramework/InputSettings.h"
+
+#include "AssetRefMap.h"
+#include "DatasmithSceneActor.h"
+#include "FloorHelper.h"
+#include "FloorHelper_Description.h"
+#include "GameOptions.h"
+#include "IPSSI.h"
+#include "LogWriter.h"
+#include "PlanetPlayerCameraManager.h"
+#include "SceneElementCategory.h"
+#include "SceneElement_DeviceBase.h"
+#include "SceneElement_PWR_Pipe.h"
+#include "SceneElement_RadarMode.h"
+#include "SceneElement_Space.h"
+#include "SceneInteractionDecorator.h"
+#include "SceneInteractionDecorator_Addtional.h"
+#include "SceneInteractionDecorator_Area.h"
+#include "SceneInteractionDecorator_Mode.h"
+#include "SceneInteractionWorldSystem.h"
+#include "SmartCitySuiteTags.h"
+#include "TemplateHelper.h"
+#include "ViewTowerProcessor.h"
+#include "ViewSingleDeviceProcessor.h"
+#include "ViewSingleFloorProcessor.h"
+#include "TourPawn.h"
+#include "ViewerPawnBase.h"
+#include "WebChannelWorldSystem.h"
+
+FMessageBody::FMessageBody()
+{
+	Guid = FGuid::NewGuid();
+}
+
+FMessageBody::~FMessageBody()
+{
+}
+
+TSharedPtr<FJsonObject> FMessageBody_Send::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = MakeShareable<FJsonObject>(new FJsonObject);
+
+	RootJsonObj->SetStringField(
+	                            CMD,
+	                            CMD_Name
+	                           );
+
+	RootJsonObj->SetStringField(
+	                            TEXT("Guid"),
+	                            Guid.ToString()
+	                           );
+
+	return RootJsonObj;
+}
+
+void FMessageBody_Send::WriteLog(const FString&CurrentJsonStr) const
+{
+	if (bIsWriteLog)
+	{
+		int32 Day = 0;
+		int32 Hour = 0;
+		WriteLogDate(Day, Hour);
+		UKismetLogger::WriteLog(CMD_Name, CurrentJsonStr, Day, Hour);
+	}
+}
+
+void FMessageBody_Send::WriteLogDate(
+	int32& Day,
+	int32& Hour
+	) const
+{
+	Day = -1;
+	Hour = 1;
+}
+
+void FMessageBody_Receive::Deserialize(
+	const FString& JsonStr
+	)
+{
+	CurrentJsonStr = JsonStr;
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	FString GuidStr;
+	if (jsonObject->TryGetStringField(TEXT("Guid"), GuidStr))
+	{
+		Guid = FGuid(JsonStr);
+	}
+}
+
+void FMessageBody_Receive::DoAction() const
+{
+}
+
+void FMessageBody_Receive::WriteLog() const
+{
+	if (bIsWriteLog)
+	{
+		int32 Day = 0;
+		int32 Hour = 0;
+		WriteLogDate(Day, Hour);
+		UKismetLogger::WriteLog(CMD_Name, CurrentJsonStr, Day, Hour);
+	}
+}
+
+void FMessageBody_Receive::WriteLogDate(
+	int32& Day,
+	int32& Hour
+	) const
+{
+	Day = -1;
+	Hour = 1;
+}
+
+FMessageBody_Receive_SwitchViewArea::FMessageBody_Receive_SwitchViewArea()
+{
+	CMD_Name = TEXT("SwitchViewArea");
+}
+
+void FMessageBody_Receive_SwitchViewArea::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	FString AreaTagStr;
+	if (jsonObject->TryGetStringField(TEXT("AreaTag"), AreaTagStr))
+	{
+		AreaTag = FGameplayTag::RequestGameplayTag(*AreaTagStr);
+	}
+}
+
+void FMessageBody_Receive_SwitchViewArea::DoAction() const
+{
+	USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(AreaTag);
+}
+
+FMessageBody_Receive_SwitchMode::FMessageBody_Receive_SwitchMode()
+{
+	CMD_Name = TEXT("SwitchMode");
+}
+
+void FMessageBody_Receive_SwitchMode::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	FString Str;
+	if (jsonObject->TryGetStringField(TEXT("Mode"), Str))
+	{
+		ModeTag = FGameplayTag::RequestGameplayTag(*Str);
+	}
+}
+
+void FMessageBody_Receive_SwitchMode::DoAction() const
+{
+	USceneInteractionWorldSystem::GetInstance()->SwitchInteractionMode(ModeTag);
+}
+
+FMessageBody_Receive_AdjustHour::FMessageBody_Receive_AdjustHour()
+{
+	CMD_Name = TEXT("AdjustHour");
+}
+
+void FMessageBody_Receive_AdjustHour::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetNumberField(TEXT("Hour"), Hour))
+	{
+	}
+}
+
+void FMessageBody_Receive_AdjustHour::DoAction() const
+{
+	// 确认当前的模式
+	auto DecoratorSPtr =
+		DynamicCastSharedPtr<FInteraction_Decorator>(
+		                                             USceneInteractionWorldSystem::GetInstance()->
+		                                             GetDecorator(
+		                                                          USmartCitySuiteTags::Interaction_Interaction
+		                                                         )
+		                                            );
+	if (DecoratorSPtr)
+	{
+		DecoratorSPtr->SetCurrentHour(Hour);
+	}
+}
+
+FMessageBody_Receive_AdjustWeather::FMessageBody_Receive_AdjustWeather()
+{
+	CMD_Name = TEXT("AdjustWeather");
+}
+
+void FMessageBody_Receive_AdjustWeather::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	FString Str;
+	if (jsonObject->TryGetStringField(TEXT("Weather"), Str))
+	{
+		Weather = FGameplayTag::RequestGameplayTag(*(TEXT("Weather.") + Str));
+	}
+}
+
+void FMessageBody_Receive_AdjustWeather::DoAction() const
+{
+	// 确认当前的模式
+	auto DecoratorSPtr =
+		DynamicCastSharedPtr<FInteraction_Decorator>(
+		                                             USceneInteractionWorldSystem::GetInstance()->
+		                                             GetDecorator(
+		                                                          USmartCitySuiteTags::Interaction_Interaction
+		                                                         )
+		                                            );
+	if (DecoratorSPtr)
+	{
+		DecoratorSPtr->SetCurrentWeather(Weather);
+	}
+}
+
+FMessageBody_Receive_UpdateViewConfig::FMessageBody_Receive_UpdateViewConfig()
+{
+	CMD_Name = TEXT("UpdateViewConfig");
+}
+
+void FMessageBody_Receive_UpdateViewConfig::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetNumberField(TEXT("WallTranlucent"), ViewConfig.WallTranlucent))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("PillarTranlucent"), ViewConfig.PillarTranlucent))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("StairsTranlucent"), ViewConfig.StairsTranlucent))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("ShowCurtainWall"), ViewConfig.CurtainWallTranlucent))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("ShowFurniture"), ViewConfig.FurnitureTranlucent))
+	{
+	}
+
+	if (jsonObject->TryGetBoolField(TEXT("ImmediatelyUpdate"), bImmediatelyUpdate))
+	{
+	}
+}
+
+void FMessageBody_Receive_UpdateViewConfig::DoAction() const
+{
+	// 确认当前的模式
+	auto DecoratorSPtr =
+		DynamicCastSharedPtr<FInteraction_Decorator>(
+		                                             USceneInteractionWorldSystem::GetInstance()->
+		                                             GetDecorator(
+		                                                          USmartCitySuiteTags::Interaction_Interaction
+		                                                         )
+		                                            );
+	if (DecoratorSPtr)
+	{
+		USceneInteractionWorldSystem::GetInstance()->SetInteractionOption(
+		                                                                  USmartCitySuiteTags::Interaction_Interaction_WallTranlucent,
+		                                                                  [this](
+		                                                                  const TSharedPtr<FInteraction_Decorator>& SPtr
+		                                                                  )
+		                                                                  {
+			                                                                  SPtr->UpdateViewConfig(ViewConfig, false);
+		                                                                  },
+		                                                                  bImmediatelyUpdate
+		                                                                 );
+	}
+}
+
+FMessageBody_Receive_LocaterDeviceByID::FMessageBody_Receive_LocaterDeviceByID()
+{
+	CMD_Name = TEXT("LocaterDeviceByID");
+}
+
+void FMessageBody_Receive_LocaterDeviceByID::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetStringField(TEXT("DeviceID"), DeviceID))
+	{
+	}
+}
+
+void FMessageBody_Receive_LocaterDeviceByID::DoAction() const
+{
+	auto SceneElementPtr = USceneInteractionWorldSystem::GetInstance()->FindSceneActor(DeviceID);
+	if (SceneElementPtr.IsValid())
+	{
+		auto DevicePtr = Cast<ASceneElement_DeviceBase>(SceneElementPtr.Get());
+		if (DevicePtr && DevicePtr->BelongFloor)
+		{
+			USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
+			                                                                   USmartCitySuiteTags::Interaction_Area_ViewDevice,
+			                                                                   [DevicePtr, this](
+			                                                                   const TSharedPtr<FDecoratorBase>&
+			                                                                   AreaDecoratorSPtr
+			                                                                   )
+			                                                                   {
+				                                                                   auto SpaceAreaDecoratorSPtr =
+					                                                                   DynamicCastSharedPtr<
+						                                                                   FViewDevice_Decorator>(
+						                                                                    AreaDecoratorSPtr
+						                                                                   );
+				                                                                   if (SpaceAreaDecoratorSPtr)
+				                                                                   {
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   SceneElementPtr = DevicePtr;
+				                                                                   }
+			                                                                   }
+			                                                                  );
+		}
+	}
+}
+
+FMessageBody_Receive_LocaterSpaceByID::FMessageBody_Receive_LocaterSpaceByID()
+{
+	CMD_Name = TEXT("LocaterSpaceByID");
+}
+
+void FMessageBody_Receive_LocaterSpaceByID::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetStringField(TEXT("SpaceID"), SpaceID))
+	{
+	}
+
+	FString FloorStr;
+	if (jsonObject->TryGetStringField(TEXT("Floor"), FloorStr))
+	{
+		Floor = FGameplayTag::RequestGameplayTag(*FloorStr);
+	}
+}
+
+void FMessageBody_Receive_LocaterSpaceByID::DoAction() const
+{
+	Super::DoAction();
+
+	if (UAssetRefMap::GetInstance()->FloorHelpers.Contains(Floor))
+	{
+		auto FloorRef = UAssetRefMap::GetInstance()->FloorHelpers[Floor];
+		auto FloorPtr = FloorRef.LoadSynchronous();
+
+		for (auto Iter : FloorPtr->SceneElementCategoryMap)
+		{
+			if (!Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_Space))
+			{
+				continue;
+			}
+
+			TArray<AActor*> OutActors;
+			Iter.Value->GetAttachedActors(OutActors, true, true);
+
+			for (auto SpaceIter : OutActors)
+			{
+				auto SpacePtr = Cast<ASceneElement_Space>(SpaceIter);
+				if (SpacePtr && SpacePtr->Category == SpaceID)
+				{
+					USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
+						 USmartCitySuiteTags::Interaction_Area_Space,
+						 [SpacePtr, this](
+						 const TSharedPtr<FDecoratorBase>& AreaDecoratorSPtr
+						 )
+						 {
+							 auto SpaceAreaDecoratorSPtr = DynamicCastSharedPtr<
+								 FViewSpace_Decorator>(AreaDecoratorSPtr);
+							 if (SpaceAreaDecoratorSPtr)
+							 {
+								 SpaceAreaDecoratorSPtr->Floor = Floor;
+								 SpaceAreaDecoratorSPtr->SceneElementPtr = SpacePtr;
+							 }
+						 }
+						);
+
+					return;
+				}
+			}
+		}
+	}
+}
+
+FMessageBody_Receive_SwitchInteractionType::FMessageBody_Receive_SwitchInteractionType()
+{
+	CMD_Name = TEXT("UpdateInteractionType");
+}
+
+void FMessageBody_Receive_SwitchInteractionType::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetStringField(TEXT("InteractionType"), InteractionType))
+	{
+	}
+}
+
+void FMessageBody_Receive_SwitchInteractionType::DoAction() const
+{
+	// 确认当前的模式
+	auto DecoratorSPtr =
+		DynamicCastSharedPtr<FInteraction_Decorator>(
+		                                             USceneInteractionWorldSystem::GetInstance()->
+		                                             GetDecorator(
+		                                                          USmartCitySuiteTags::Interaction_Interaction
+		                                                         )
+		                                            );
+	if (DecoratorSPtr)
+	{
+		USceneInteractionWorldSystem::GetInstance()->SetInteractionOption(
+		                                                                  USmartCitySuiteTags::Interaction_Interaction_WallTranlucent,
+		                                                                  [this](
+		                                                                  const TSharedPtr<FInteraction_Decorator>&
+		                                                                  DecoratorSPtr
+		                                                                  )
+		                                                                  {
+			                                                                  auto ControllConfig = DecoratorSPtr->
+				                                                                  GetConfigControlConfig();
+			                                                                  if (InteractionType == TEXT("Device"))
+			                                                                  {
+				                                                                  ControllConfig.InteractionType =
+					                                                                  EInteractionType::kDevice;
+			                                                                  }
+			                                                                  else if (InteractionType == TEXT("Space"))
+			                                                                  {
+				                                                                  ControllConfig.InteractionType =
+					                                                                  EInteractionType::kSpace;
+			                                                                  }
+			                                                                  else
+			                                                                  {
+				                                                                  ControllConfig.InteractionType =
+					                                                                  EInteractionType::kSpace;
+			                                                                  }
+			                                                                  DecoratorSPtr->UpdateControlConfig(
+				                                                                   ControllConfig
+				                                                                  );
+		                                                                  },
+		                                                                  true
+		                                                                 );
+	}
+}
+
+FMessageBody_Receive_UpdateRadarInfo::FMessageBody_Receive_UpdateRadarInfo()
+{
+	CMD_Name = TEXT("UpdateRadarInfo");
+
+	bIsWriteLog = false;
+}
+
+void FMessageBody_Receive_UpdateRadarInfo::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetStringField(TEXT("DeviceID"), DeviceID))
+	{
+	}
+
+	Value.Empty();
+
+	const TArray<TSharedPtr<FJsonValue>>* OutArray;
+	if (jsonObject->TryGetArrayField(TEXT("value"), OutArray))
+	{
+		for (const auto& JsonValueIter : *OutArray)
+		{
+			auto ObjSPtr = JsonValueIter->AsObject();
+
+			FUpdateRadarInfo UpdateRadarInfo;
+
+			ObjSPtr->TryGetNumberField(TEXT("accX"), UpdateRadarInfo.Acceleration.X);
+			ObjSPtr->TryGetNumberField(TEXT("accY"), UpdateRadarInfo.Acceleration.Y);
+
+			ObjSPtr->TryGetNumberField(TEXT("posX"), UpdateRadarInfo.Position.X);
+			ObjSPtr->TryGetNumberField(TEXT("posY"), UpdateRadarInfo.Position.Y);
+
+			UpdateRadarInfo.Position.X = -UpdateRadarInfo.Position.X;
+
+			ObjSPtr->TryGetNumberField(TEXT("velX"), UpdateRadarInfo.Velocity.X);
+			ObjSPtr->TryGetNumberField(TEXT("velY"), UpdateRadarInfo.Velocity.Y);
+
+			ObjSPtr->TryGetNumberField(TEXT("ec"), UpdateRadarInfo.EC);
+			ObjSPtr->TryGetNumberField(TEXT("g"), UpdateRadarInfo.G);
+
+			ObjSPtr->TryGetNumberField(TEXT("numberOfTargets"), UpdateRadarInfo.NumberOfTargets);
+
+			ObjSPtr->TryGetStringField(TEXT("tid"), UpdateRadarInfo.TID);
+
+			Value.Add(UpdateRadarInfo);
+		}
+	}
+}
+
+void FMessageBody_Receive_UpdateRadarInfo::DoAction() const
+{
+	Super::DoAction();
+
+	auto SceneElement_RadarModePtr = Cast<ASceneElement_RadarMode>(
+	                                                               USceneInteractionWorldSystem::GetInstance()->
+	                                                               FindSceneActor(DeviceID)
+	                                                              );
+
+	if (SceneElement_RadarModePtr)
+	{
+		TMap<FString, FVector> Pts;
+
+		for (const auto& Iter : Value)
+		{
+			// 单位转换 
+			Pts.Add(Iter.TID, FVector(Iter.Position.X, Iter.Position.Y, 0) * 100);
+		}
+
+		// SceneElement_RadarModePtr->UpdatePositions(Pts);
+	}
+}
+
+FMessageBody_SelectedFloor::FMessageBody_SelectedFloor()
+{
+	CMD_Name = TEXT("SelectedFloor");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_SelectedFloor::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+	{
+		TArray<TSharedPtr<FJsonValue>> Array;
+
+		for (const auto& Iter : SpacesMap)
+		{
+			auto SpaceValue = Iter.Key->GetSceneElementData();
+			auto SpaceObj = SpaceValue->AsObject();
+
+			TArray<TSharedPtr<FJsonValue>> DeviceArray;
+
+			for (const auto& SecondIter : Iter.Value)
+			{
+				if (SecondIter)
+				{
+					DeviceArray.Add(SecondIter->GetSceneElementData());
+				}
+			}
+
+			SpaceObj->SetArrayField(TEXT("Devices"), DeviceArray);
+
+			Array.Add(SpaceValue);
+		}
+
+		RootJsonObj->SetArrayField(
+		                           TEXT("Spaces"),
+		                           Array
+		                          );
+	}
+	
+	{
+		TArray<TSharedPtr<FJsonValue>> Array;
+
+		for (const auto& Iter : PresetBuildingCameraSeat)
+		{
+			auto PresetValueSPtr = MakeShared<FJsonValueString>(Iter.Key);
+
+			Array.Add(PresetValueSPtr);
+		}
+
+		RootJsonObj->SetArrayField(
+		                           TEXT("PresetCameraSets"),
+		                           Array
+		                          );
+	}
+	
+	{
+		TArray<TSharedPtr<FJsonValue>> Array;
+
+		for (const auto& Iter : ExtentPresetBuildingCameraSeat)
+		{
+			TSharedPtr<FJsonObject> JsonObj = MakeShareable<FJsonObject>(new FJsonObject);
+
+			JsonObj->SetStringField(
+									TEXT("ID"),
+									Iter.Get<0>()
+								   );
+
+			JsonObj->SetStringField(
+									TEXT("Group"),
+									Iter.Get<1>()
+								   );
+
+			JsonObj->SetStringField(
+									TEXT("Name"),
+									Iter.Get<2>()
+								   );
+
+			auto PresetValueSPtr = MakeShared<FJsonValueObject>(JsonObj);
+
+			Array.Add(PresetValueSPtr);
+		}
+
+		RootJsonObj->SetArrayField(
+		                           TEXT("ExtentPresetCameraSets"),
+		                           Array
+		                          );
+	}
+	
+	{
+		TArray<TSharedPtr<FJsonValue>> Array;
+
+		for (const auto& Iter : PWR_PipeAry)
+		{
+			auto PresetValueSPtr = MakeShared<FJsonValueString>(Iter->GetID());
+
+			Array.Add(PresetValueSPtr);
+		}
+
+		RootJsonObj->SetArrayField(
+		                           TEXT("PipeAry"),
+		                           Array
+		                          );
+	}
+	
+	if (FloorHelper)
+	{
+		RootJsonObj->SetStringField(
+		                            TEXT("FloorTag"),
+		                            FloorHelper->FloorTag.ToString()
+		                           );
+
+		RootJsonObj->SetStringField(
+		                            TEXT("Floor"),
+		                            FloorHelper->FloorIndexDescription
+		                           );
+	}
+
+	return RootJsonObj;
+}
+
+FMessageBody_SelectedSpace::FMessageBody_SelectedSpace()
+{
+	CMD_Name = TEXT("SelectedSpace");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_SelectedSpace::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	TArray<TSharedPtr<FJsonValue>> Array;
+
+	for (const auto &Iter : DeviceIDAry)
+	{
+		TSharedPtr<FJsonObject> JsonObj = MakeShareable<FJsonObject>(new FJsonObject);
+
+		JsonObj->SetStringField(
+		                        TEXT("Type"),
+		                        Iter.Type
+		                       );
+
+		JsonObj->SetStringField(
+		                        TEXT("ID"),
+		                        Iter.DeviceID
+		                       );
+
+		auto DeviceObjSPtr = MakeShared<FJsonValueObject>(JsonObj);
+
+		Array.Add(DeviceObjSPtr);
+	}
+
+	RootJsonObj->SetArrayField(
+	                           TEXT("DeviceIDAry"),
+	                           Array
+	                          );
+
+	RootJsonObj->SetStringField(
+	                            TEXT("SpaceName"),
+	                            SpaceName
+	                           );
+
+	return RootJsonObj;
+}
+
+FMessageBody_SelectedDevice::FMessageBody_SelectedDevice()
+{
+	CMD_Name = TEXT("SelectedDevice");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_SelectedDevice::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	TArray<TSharedPtr<FJsonValue>> Array;
+
+	for (const auto &Iter : DeviceIDAry)
+	{
+		Array.Add(MakeShared<FJsonValueString>(Iter));
+	}
+
+	RootJsonObj->SetArrayField(
+	                           TEXT("DeviceIDAry"),
+	                           Array
+	                          );
+
+	return RootJsonObj;
+}
+
+FMessageBody_ViewDevice::FMessageBody_ViewDevice()
+{
+	CMD_Name = TEXT("ViewDevice");
+}
+
+FMessageBody_Receive_AdjustCameraSeat::FMessageBody_Receive_AdjustCameraSeat()
+{
+	CMD_Name = TEXT("AdjustCameraSeat");
+}
+
+void FMessageBody_Receive_AdjustCameraSeat::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetBoolField(TEXT("UseClampPitch"), bUseClampPitch))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("MinPitch"), MinPitch))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("MaxPitch"), MaxPitch))
+	{
+	}
+
+	if (jsonObject->TryGetBoolField(TEXT("AllowRotByYaw"), bAllowRotByYaw))
+	{
+	}
+}
+
+void FMessageBody_Receive_AdjustCameraSeat::DoAction() const
+{
+	UGameOptions::GetInstance()->bAllowRotByYaw = bAllowRotByYaw;
+
+	auto DecoratorSPtr =
+		DynamicCastSharedPtr<FInteraction_Decorator>(
+		                                             USceneInteractionWorldSystem::GetInstance()->
+		                                             GetDecorator(
+		                                                          USmartCitySuiteTags::Interaction_Interaction
+		                                                         )
+		                                            );
+
+	if (!DecoratorSPtr)
+	{
+		return;
+	}
+
+	auto ConfigControlConfig = DecoratorSPtr->GetConfigControlConfig();
+	ConfigControlConfig.bUseCustomPitchLimit = bUseClampPitch;
+	ConfigControlConfig.ViewPitchMin = MinPitch;
+	ConfigControlConfig.ViewPitchMax = MaxPitch;
+	DecoratorSPtr->UpdateControlConfig(ConfigControlConfig);
+
+	{
+		auto ViewBuildingProcessorSPtr = DynamicCastSharedPtr<TourProcessor::FViewTowerProcessor>(
+			 UInputProcessorSubSystem_Imp::GetInstance()->GetCurrentAction()
+			);
+		if (ViewBuildingProcessorSPtr)
+		{
+			Cast<APlanetPlayerCameraManager>(
+			                                 GEngine->GetFirstLocalPlayerController(GetWorldImp())->PlayerCameraManager
+			                                )->UpdateCameraSetting();
+
+			ViewBuildingProcessorSPtr->AdjustCameraSeat(FRotator(MinPitch, 0, 0));
+			return;
+		}
+	}
+	{
+		Cast<APlanetPlayerCameraManager>(
+		                                 GEngine->GetFirstLocalPlayerController(GetWorldImp())->PlayerCameraManager
+		                                )->UpdateCameraSetting();
+
+		return;
+	}
+}
+
+TSharedPtr<FJsonObject> FMessageBody_ViewDevice::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	RootJsonObj->SetStringField(
+	                            TEXT("Type"),
+	                            Type
+	                           );
+
+	RootJsonObj->SetStringField(
+	                            TEXT("SceneElementID"),
+	                            DeviceID
+	                           );
+
+	return RootJsonObj;
+}
+
+FMessageBody_ClickedMonitor::FMessageBody_ClickedMonitor()
+{
+	CMD_Name = TEXT("ClickedMonitor");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_ClickedMonitor::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	RootJsonObj->SetStringField(
+								TEXT("Type"),
+								Type
+							   );
+
+	RootJsonObj->SetStringField(
+								TEXT("SceneElementID"),
+								DeviceID
+							   );
+
+	return RootJsonObj;
+}
+
+FMessageBody_ViewConfigChanged::FMessageBody_ViewConfigChanged()
+{
+	CMD_Name = TEXT("ViewConfigChanged");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_ViewConfigChanged::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	RootJsonObj->SetNumberField(
+	                            TEXT("WallTranlucent"),
+	                            ViewConfig.WallTranlucent
+	                           );
+
+	RootJsonObj->SetNumberField(
+	                            TEXT("PillarTranlucent"),
+	                            ViewConfig.PillarTranlucent
+	                           );
+
+	RootJsonObj->SetNumberField(
+	                            TEXT("StairsTranlucent"),
+	                            ViewConfig.StairsTranlucent
+	                           );
+
+	RootJsonObj->SetNumberField(
+	                            TEXT("ShowCurtainWall"),
+	                            ViewConfig.CurtainWallTranlucent
+	                           );
+
+	RootJsonObj->SetNumberField(
+	                            TEXT("ShowFurniture"),
+	                            ViewConfig.FurnitureTranlucent
+	                           );
+
+	return RootJsonObj;
+}
+
+FMessageBody_Receive_UpdateFloorDescription::FMessageBody_Receive_UpdateFloorDescription()
+{
+	CMD_Name = TEXT("UpdateFloorDescription");
+}
+
+void FMessageBody_Receive_UpdateFloorDescription::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+
+	FString FloorStr;
+	if (jsonObject->TryGetStringField(TEXT("FloorSet"), FloorStr))
+	{
+		Floor = FGameplayTag::RequestGameplayTag(*FloorStr);
+	}
+
+	if (jsonObject->TryGetStringField(TEXT("FloorDescription"), FloorDescription))
+	{
+	}
+}
+
+void FMessageBody_Receive_UpdateFloorDescription::DoAction() const
+{
+	Super::DoAction();
+
+	if (UAssetRefMap::GetInstance()->FloorHelpers.Contains(Floor))
+	{
+		auto FloorRef = UAssetRefMap::GetInstance()->FloorHelpers[Floor];
+		auto FloorPtr = FloorRef.LoadSynchronous();
+
+		FloorPtr->FloorHelper_DescriptionPtr->UpdateFloorDescription(FloorDescription);
+	}
+}
+
+FMessageBody_Receive_ViewSpeacialArea::FMessageBody_Receive_ViewSpeacialArea()
+{
+	CMD_Name = TEXT("ViewSpeacialArea");
+}
+
+void FMessageBody_Receive_ViewSpeacialArea::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+	{
+		FloorSet.Empty();
+		const TArray<TSharedPtr<FJsonValue>>* OutArray = nullptr;
+		if (jsonObject->TryGetArrayField(TEXT("FloorSet"), OutArray))
+		{
+			FString FloorStr;
+			for (const auto &JsonValue : *OutArray)
+			{
+				FloorStr = JsonValue->AsString();
+				FloorSet.Add(FGameplayTag::RequestGameplayTag(*FloorStr));
+			}
+		}
+	}
+
+	{
+		PriorityHideFloorSet.Empty();
+		const TArray<TSharedPtr<FJsonValue>>* OutArray = nullptr;
+		if (jsonObject->TryGetArrayField(TEXT("PriorityHideFloorSet"), OutArray))
+		{
+			FString FloorStr;
+			for (const auto& JsonValue : *OutArray)
+			{
+				FloorStr = JsonValue->AsString();
+				PriorityHideFloorSet.Add(FGameplayTag::RequestGameplayTag(*FloorStr));
+			}
+		}
+	}
+
+	FString AreaTagStr;
+	if (jsonObject->TryGetStringField(TEXT("AreaTag"), AreaTagStr))
+	{
+		AreaTag = FGameplayTag::RequestGameplayTag(*AreaTagStr);
+	}
+
+	if (jsonObject->TryGetStringField(TEXT("Seat"), Seat))
+	{
+	}
+
+	const TSharedPtr<FJsonObject>* OutObject = nullptr;
+	if (jsonObject->TryGetObjectField(TEXT("ExtentSeat"),  OutObject))
+	{
+		if (OutObject)
+		{
+			if ((*OutObject)->TryGetStringField(TEXT("ID"), ID))
+			{
+			}
+			if ((*OutObject)->TryGetStringField(TEXT("Group"), Group))
+			{
+			}
+			if ((*OutObject)->TryGetStringField(TEXT("Name"), Name))
+			{
+			}
+		}
+	}
+}
+
+void FMessageBody_Receive_ViewSpeacialArea::DoAction() const
+{
+	Super::DoAction();
+
+	for (const auto& Iter : UAssetRefMap::GetInstance()->FloorHelpers)
+	{
+		const auto PresetBuildingCameraSeat = Iter.Value->GetPresetBuildingCameraSeat();
+		if (PresetBuildingCameraSeat.Contains(Seat))
+		{
+			auto ViewerPawnBasePtr = PresetBuildingCameraSeat[
+				Seat];
+			USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
+			                                                                   USmartCitySuiteTags::Interaction_Area_SpecialArea,
+			                                                                   [this, ViewerPawnBasePtr](
+			                                                                   const TSharedPtr<FDecoratorBase>&
+			                                                                   AreaDecoratorSPtr
+			                                                                   )
+			                                                                   {
+				                                                                   auto SpaceAreaDecoratorSPtr =
+					                                                                   DynamicCastSharedPtr<
+						                                                                   FViewSpecialArea_Decorator>(
+						                                                                    AreaDecoratorSPtr
+						                                                                   );
+				                                                                   if (SpaceAreaDecoratorSPtr)
+				                                                                   {
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   ViewerPawnBasePtr =
+						                                                                   ViewerPawnBasePtr.
+						                                                                   LoadSynchronous();
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   FloorSet = FloorSet;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   PriorityHideFloorSet =
+						                                                                   PriorityHideFloorSet;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   Seat = Seat;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   AreaTag = AreaTag;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   ID = ID;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   Group = Group;
+
+					                                                                   SpaceAreaDecoratorSPtr->
+						                                                                   Name = Name;
+				                                                                   }
+			                                                                   }
+			                                                                  );
+
+			return;
+		}
+	}
+}
+
+FMessageBody_UE_Initialized::FMessageBody_UE_Initialized()
+{
+	CMD_Name = TEXT("UE_Initialized");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_UE_Initialized::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	RootJsonObj->SetBoolField(
+	                          TEXT("IsOK"),
+	                          true
+	                         );
+
+	return RootJsonObj;
+}
+
+FMessageBody_UE_Tick::FMessageBody_UE_Tick()
+{
+	CMD_Name = TEXT("UE_Tick");
+}
+
+TSharedPtr<FJsonObject> FMessageBody_UE_Tick::SerializeBody() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = Super::SerializeBody();
+
+	RootJsonObj->SetStringField(
+	                            TEXT("Text"),
+	                            Text
+	                           );
+
+	TArray<TSharedPtr<FJsonValue>> Array;
+
+	const auto IDs = UWebChannelWorldSystem::GetInstance()->ConnetedPlayerIds;
+	for (auto Iter : IDs )
+	{
+		Array.Add(MakeShared<FJsonValueString>(Iter));
+	}
+	
+	RootJsonObj->SetArrayField(
+	                            TEXT("ConnectedID"),
+	                            Array
+	                           );
+
+	return RootJsonObj;
+}
+
+FMessageBody_Receive_SetRelativeTransoform::FMessageBody_Receive_SetRelativeTransoform()
+{
+	CMD_Name = TEXT("SetRelativeTransoform");
+}
+
+void FMessageBody_Receive_SetRelativeTransoform::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetStringField(TEXT("DeviceID"), DeviceID))
+	{
+	}
+
+	FRotator Rotator;
+
+	if (jsonObject->TryGetNumberField(TEXT("Rotation_Pitch"), Rotator.Pitch))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("Rotation_Yaw"), Rotator.Yaw))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("Rotation_Roll"), Rotator.Roll))
+	{
+	}
+
+	Transform.SetRotation(Rotator.Quaternion());
+
+	FVector Location;
+
+	if (jsonObject->TryGetNumberField(TEXT("Translation_X"), Location.X))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("Translation_Y"), Location.Y))
+	{
+	}
+
+	if (jsonObject->TryGetNumberField(TEXT("Translation_Z"), Location.Z))
+	{
+	}
+
+	Transform.SetTranslation(Location);
+}
+
+void FMessageBody_Receive_SetRelativeTransoform::DoAction() const
+{
+	Super::DoAction();
+
+	auto SceneElementPtr = USceneInteractionWorldSystem::GetInstance()->FindSceneActor(DeviceID);
+	if (SceneElementPtr.IsValid())
+	{
+		auto DevicePtr = Cast<ASceneElement_DeviceBase>(SceneElementPtr);
+		if (DevicePtr)
+		{
+			DevicePtr->UpdateReletiveTransform(Transform);
+		}
+	}
+}
+
+FMessageBody_Receive_UpdateSceneElementParam::FMessageBody_Receive_UpdateSceneElementParam()
+{
+	CMD_Name = TEXT("UpdateSceneElementParam");
+}
+
+void FMessageBody_Receive_UpdateSceneElementParam::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	bIsSame = JsonStr == PreviouJsonStr;
+	if (bIsSame)
+	{
+		return;
+	}
+	PreviouJsonStr = JsonStr;
+	
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetBoolField(TEXT("ImmediatelyUpdate"), bImmediatelyUpdate))
+	{
+	}
+
+	ExtensionParamMap.Empty();
+
+	const TSharedPtr<FJsonObject>* OutObject = nullptr;
+	if (jsonObject->TryGetObjectField(TEXT("SceneElements"), OutObject))
+	{
+		for (auto Iter : (*OutObject)->Values)
+		{
+			auto& Ref = ExtensionParamMap.Add(Iter.Key, {});
+
+			const auto ObjSPtr = Iter.Value->AsObject();
+			for (const auto& SecondIter : ObjSPtr->Values)
+			{
+				Ref.Add(SecondIter.Key, SecondIter.Value->AsString());
+			}
+		}
+	}
+}
+
+void FMessageBody_Receive_UpdateSceneElementParam::DoAction() const
+{
+	Super::DoAction();
+
+	if (bIsSame)
+	{
+		return;
+	}
+	
+	for (const auto& Iter : ExtensionParamMap)
+	{
+		auto SceneElementPtr =
+			USceneInteractionWorldSystem::GetInstance()->FindSceneActor(Iter.Key);
+
+		if (SceneElementPtr.IsValid())
+		{
+			SceneElementPtr->UpdateExtensionParamMap(Iter.Value, bImmediatelyUpdate);
+		}
+	}
+}
+
+FMessageBody_Receive_UpdateSceneElementParamByArea::FMessageBody_Receive_UpdateSceneElementParamByArea()
+{
+	CMD_Name = TEXT("UpdateSceneElementParamByArea");
+}
+
+void FMessageBody_Receive_UpdateSceneElementParamByArea::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+	                             JsonReader,
+	                             jsonObject
+	                            );
+
+	if (jsonObject->TryGetBoolField(TEXT("ImmediatelyUpdate"), bImmediatelyUpdate))
+	{
+	}
+
+	ExtensionParamMap.Empty();
+
+	const TSharedPtr<FJsonObject>* OutObject = nullptr;
+	if (jsonObject->TryGetObjectField(TEXT("SceneElements"), OutObject))
+	{
+		for (auto Iter : (*OutObject)->Values)
+		{
+			auto& Ref = ExtensionParamMap.Add(Iter.Key, {});
+
+			const auto ObjSPtr = Iter.Value->AsObject();
+			for (const auto& SecondIter : ObjSPtr->Values)
+			{
+				Ref.Add(SecondIter.Key, SecondIter.Value->AsString());
+			}
+		}
+	}
+}
+
+void FMessageBody_Receive_UpdateSceneElementParamByArea::DoAction() const
+{
+	Super::DoAction();
+
+	USceneInteractionWorldSystem::GetInstance()->SwitchInteractionMode(
+	                                                                   USmartCitySuiteTags::Interaction_Mode_BatchControl,
+	                                                                   [this](
+	                                                                   const TSharedPtr<FDecoratorBase>&
+	                                                                   AreaDecoratorSPtr
+	                                                                   )
+	                                                                   {
+		                                                                   auto BatchControlModeDecoratorSPtr =
+			                                                                   DynamicCastSharedPtr<
+				                                                                   FBatchControlMode_Decorator>(
+				                                                                    AreaDecoratorSPtr
+				                                                                   );
+		                                                                   if (BatchControlModeDecoratorSPtr)
+		                                                                   {
+			                                                                   BatchControlModeDecoratorSPtr->
+				                                                                   ExtensionParamMap =
+				                                                                   ExtensionParamMap;
+		                                                                   }
+	                                                                   }
+	                                                                  );
+}
+
+FMessageBody_Receive_SelectedDevices::FMessageBody_Receive_SelectedDevices()
+{
+	CMD_Name = TEXT("SelectedDevices");
+}
+
+void FMessageBody_Receive_SelectedDevices::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+								 JsonReader,
+								 jsonObject
+								);
+
+	DeviceIDAry.Empty();
+	
+	const TArray<TSharedPtr<FJsonValue>>* OutArray = nullptr;
+	if (jsonObject->TryGetArrayField(TEXT("Devices"), OutArray))
+	{
+		for (auto Iter : *OutArray)
+		{
+			DeviceIDAry.Add(Iter->AsString());
+		}
+	}
+}
+
+void FMessageBody_Receive_SelectedDevices::DoAction() const
+{
+	Super::DoAction();
+
+	TSet<ASceneElementBase*> FocusActorsAry;
+
+	for (auto Iter : DeviceIDAry)
+	{
+		auto Temp = USceneInteractionWorldSystem::GetInstance()->FindSceneActor(Iter);
+		if (Temp.IsValid())
+		{
+			FocusActorsAry.Add(Temp.Get());	
+		}
+	}
+
+	FSceneElementConditional SceneElementConditional;
+
+	SceneElementConditional.ConditionalSet.AddTag(USmartCitySuiteTags::Interaction_Area_Selectd);
+	
+	USceneInteractionWorldSystem::GetInstance()->AddInteractionType(FocusActorsAry, SceneElementConditional);
+}
+
+FMessageBody_Receive_ClearSelectedDevices::FMessageBody_Receive_ClearSelectedDevices()
+{
+	CMD_Name = TEXT("ClearSelectedDevices");
+}
+
+void FMessageBody_Receive_ClearSelectedDevices::DoAction() const
+{
+	Super::DoAction();
+
+	FSceneElementConditional SceneElementConditional;
+
+	SceneElementConditional.ConditionalSet.AddTag(USmartCitySuiteTags::Interaction_Area_Selectd);
+	
+	USceneInteractionWorldSystem::GetInstance()->RemoveInteractionType(SceneElementConditional);
+}
+
+FMessageBody_Receive_UpdateQueryDeviceToken::FMessageBody_Receive_UpdateQueryDeviceToken()
+{
+	CMD_Name = TEXT("UpdateQueryDeviceToken");
+}
+
+void FMessageBody_Receive_UpdateQueryDeviceToken::Deserialize(
+	const FString& JsonStr
+	)
+{
+	Super::Deserialize(JsonStr);
+	
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(JsonStr);
+
+	TSharedPtr<FJsonObject> jsonObject;
+
+	FJsonSerializer::Deserialize(
+								 JsonReader,
+								 jsonObject
+								);
+
+	if (jsonObject->TryGetStringField(TEXT("ImmediatelyUpdate"), QueryDeviceToken))
+	{
+	}
+
+}
+
+void FMessageBody_Receive_UpdateQueryDeviceToken::DoAction() const
+{
+	Super::DoAction();
+
+	UWebChannelWorldSystem::GetInstance()->QueryDeviceToken = QueryDeviceToken;
+}
+
+FString FMessageBody_Send::GetJsonString() const
+{
+	TSharedPtr<FJsonObject> RootJsonObj = SerializeBody();
+
+	FString JsonString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+	FJsonSerializer::Serialize(
+	                           RootJsonObj.ToSharedRef(),
+	                           Writer
+	                          );
+
+	return JsonString;
+}
+
+FString FMessageBody::CMD = TEXT("CMD");
+
+FString FMessageBody::GetCMDName() const
+{
+	return CMD_Name;
+}
