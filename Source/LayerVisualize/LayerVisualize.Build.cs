@@ -41,6 +41,7 @@ public class LayerVisualize : ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] { });
         
         PrivateDependencyModuleNames.AddRange(new string[] {
+            // 引擎内容
             "Core",
             "CoreUObject",
             "Engine",
@@ -60,6 +61,16 @@ public class LayerVisualize : ModuleRules
             "MediaAssets",
             "DatasmithContent",
             "MovieScene",
+			
+            // 引擎插件
+            "GameplayTags",
+            "GameplayTasks",
+            "GameplayAbilities",
+            "GameplayStateTreeModule",
+            "GameplayAbilities",
+            "GameplayCameras",
+            "Niagara",
+            "PixelStreaming",
             
             // 插件
             "Common_UMG",

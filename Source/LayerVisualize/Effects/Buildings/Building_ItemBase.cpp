@@ -4,8 +4,6 @@
 #include "DatasmithAssetUserData.h"
 
 #include "CollisionDataStruct.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionWorldSystem.h"
 #include "AssetRefMap.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
