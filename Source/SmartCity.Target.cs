@@ -9,11 +9,18 @@ public class SmartCityTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		
-		 bForceEnableRTTI = true;
+		if (Target.Platform == UnrealTargetPlatform.Linux)
+		{
+			bForceEnableRTTI = true;
+		}
+
 		 bOverrideBuildEnvironment = true;
 		
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		ExtraModuleNames.Add("LayerController");
+		ExtraModuleNames.Add("LayerData");
+		ExtraModuleNames.Add("LayerVisualize");
 		ExtraModuleNames.Add("SmartCity");
 	}
 }

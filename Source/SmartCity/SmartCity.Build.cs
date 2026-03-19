@@ -30,18 +30,7 @@ public class SmartCity : ModuleRules
 		PublicDefinitions.Add("TEST_RADARLOG = 0");  
 
 		PublicIncludePaths.Add("SmartCity");
-		PublicIncludePaths.Add("SmartCity/Marks");
-		PublicIncludePaths.Add("SmartCity/Net");
-		PublicIncludePaths.Add("SmartCity/Effects");
-		PublicIncludePaths.Add("SmartCity/Effects/Buildings");
-		PublicIncludePaths.Add("SmartCity/Effects/SceneElement");
-		PublicIncludePaths.Add("SmartCity/Effects/SceneElementManagger");
-		PublicIncludePaths.Add("SmartCity/Effects/Spaces");
-		PublicIncludePaths.Add("SmartCity/ElevatorSubSystem");
-		PublicIncludePaths.Add("SmartCity/SpaceSubSystem");
-		PublicIncludePaths.Add("SmartCity/BuildingTools");
 		PublicIncludePaths.Add("SmartCity/OpenWorld");
-		PublicIncludePaths.Add("SmartCity/SceneInteractionDecorator");
 		PublicIncludePaths.Add("SmartCity/GamePlay");
 		PublicIncludePaths.Add("SmartCity/GamePlay/Controller");
 		PublicIncludePaths.Add("SmartCity/GamePlay/Controller/Player");
@@ -53,19 +42,11 @@ public class SmartCity : ModuleRules
 		PublicIncludePaths.Add("SmartCity/GamePlay/PlayerState");
 		PublicIncludePaths.Add("SmartCity/GamePlay/Pawn");
 		PublicIncludePaths.Add("SmartCity/GamePlay/Pawn/Human");
-		PublicIncludePaths.Add("SmartCity/GamePlay/WorldSetting");
 		PublicIncludePaths.Add("SmartCity/GamePlay/PlayerCameraManager");
 		PublicIncludePaths.Add("SmartCity/GamePlay/GameViewportClient");
 		PublicIncludePaths.Add("SmartCity/Command");
 		PublicIncludePaths.Add("SmartCity/Common");
-		PublicIncludePaths.Add("SmartCity/AssetRefMap");
-		PublicIncludePaths.Add("SmartCity/UI");
-		PublicIncludePaths.Add("SmartCity/UI/HUD");
 
-		PublicIncludePaths.Add("SmartCity/Imp_InputProcessor");
-		PublicIncludePaths.Add("SmartCity/Imp_InputProcessor/InputProcessor");
-		PublicIncludePaths.Add("SmartCity/Imp_InputProcessor/InputProcessor/HumanProcessor");
-		PublicIncludePaths.Add("SmartCity/Imp_InputProcessor/InputProcessor/TourProcessor");
 		
 		if (Target.bBuildEditor == true)
 		{
@@ -106,6 +87,7 @@ public class SmartCity : ModuleRules
 
 			"HTTP",
 			"WebSockets",
+			"XmlParser",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -120,13 +102,14 @@ public class SmartCity : ModuleRules
 			"SmartCitySuite",
 			
 			// 其他模块
-			"AssetRef",
 			"CommonType",
 			"GameOptions",
 			"GameplayTagsLibrary",
 			"Tools", 
 			"DTMqtt", 
-			"XmlParser",
+			"LayerVisualize",
+			"LayerData",
+			"LayerController",
 		});
 
 		PrivateIncludePathModuleNames.AddRange(new string[]

@@ -1,0 +1,102 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "GameFramework/Pawn.h"
+
+#include "GameOptions.h"
+#include "GenerateTypes.h"
+#include "SceneElementBase.h"
+#include "SceneElement_DeviceBase.h"
+
+#include "SceneElement_PWR_Pipe.generated.h"
+
+class UPlayerComponent;
+class USphereComponent;
+class UFloatingPawnMovement;
+class USpringArmComponent;
+class UCameraComponent;
+class AViewerPawn;
+class UMaterialInterface;
+class UStaticMeshComponent;
+
+/**
+ * 管道效果
+ */
+UCLASS()
+class LAYERVISUALIZE_API ASceneElement_PWR_Pipe :
+	public ASceneElement_DeviceBase
+{
+	GENERATED_BODY()
+
+public:
+	ASceneElement_PWR_Pipe(
+		const FObjectInitializer& ObjectInitializer
+		);
+
+	virtual void BeginPlay() override;
+
+	virtual FBox GetComponentsBoundingBox(
+		bool bNonColliding = false,
+		bool bIncludeFromChildActors = false
+		) const override;
+
+	virtual void ReplaceImp(
+		AActor* ActorPtr,
+		const TPair<FName, FString>& InUserData
+		) override;
+
+	virtual void Merge(
+		const TSoftObjectPtr<AActor>& ActorRef,
+		const TPair<FName, FString>& InUserData,
+		const TMap<FName, FString>& NewUserData
+		) override;
+
+	virtual void SwitchInteractionType(
+		const FSceneElementConditional& ConditionalSet
+		) override;
+
+	FString GetID() const;
+
+	virtual void InitialSceneElement() override;
+
+	float EnergyValue = 0.f;
+
+protected:
+	virtual void EntryFocusDevice(
+		) override;
+
+	virtual void EntryViewDevice(
+		) override;
+
+	virtual void EntryShowDevice(
+		) override;
+
+	virtual void EntryShoweviceEffect(
+		) override;
+
+	virtual void QuitAllState(
+		) override;
+
+	virtual void CheckIsJiaCeng(
+		UDatasmithAssetUserData* AUDPtr
+		) override;
+
+	virtual void UpdateExtensionParamMap(
+		const TMap<FString, FString>& NewExtensionParamMap,
+		bool bImmediatelyUpdate
+		) override;
+
+	virtual void RevertOnriginalMat() override;
+
+	TPair<FName, FString> CurrentUserData;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	TArray<UStaticMeshComponent*> StaticMeshComponentsAry;
+	
+	UPROPERTY()
+	TSet<UMaterialInstanceDynamic*> PWR_DynamicMIDAry;
+	
+};

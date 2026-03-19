@@ -1,0 +1,61 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "GameFramework/Pawn.h"
+
+#include "GameOptions.h"
+#include "SceneElementBase.h"
+#include "SceneElementManaggerBase.h"
+#include "SceneElement_DeviceBase.h"
+#include "GenerateTypes.h"
+#include "PlayerGameplayTasks.h"
+
+#include "SceneElementManagger_ControlBorder.generated.h"
+
+class UPlayerComponent;
+class USphereComponent;
+class UFloatingPawnMovement;
+class USpringArmComponent;
+class UCameraComponent;
+class AViewerPawn;
+class UActorSequenceComponent;
+class UInstancedStaticMeshComponent;
+class UGameplayTaskBase;
+
+/**
+ * 门禁
+ */
+UCLASS()
+class LAYERVISUALIZE_API ASceneElementManagger_ControlBorder :
+	public ASceneElementManaggerBase
+{
+	GENERATED_BODY()
+
+public:
+	ASceneElementManagger_ControlBorder(
+		const FObjectInitializer& ObjectInitializer
+		);
+
+	virtual void Merge(
+		const TSoftObjectPtr<AActor>& ActorRef,
+		const TPair<FName, FString>& InUserData,
+		const TMap<FName, FString>& NewUserData
+		) override;
+
+	virtual TArray<TObjectPtr<UGameplayTaskBase>> SwitchInteractionType(
+		const FSceneElementConditional& ConditionalSet
+		) override;
+
+	virtual void UpdateExtensionParamMap(
+		const TMap<FString, FString>& NewExtensionParamMap,
+		bool bImmediatelyUpdate
+		) override;
+
+private:
+	TArray<TObjectPtr<UGameplayTaskBase>> SwitchFloor(
+		const FSceneElementConditional& ConditionalSet
+		) const;
+};
