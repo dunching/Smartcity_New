@@ -4,17 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 #include "GameOptions.h"
-#include "GameplayTagsLibrary.h"
 #include "SceneInteractionWorldSystem.h"
-#include "SmartCitySuiteTags.h"
-#include "TourPawn.h"
-
-TourProcessor::FViewSingleFloorViewEnergyProcessor::FViewSingleFloorViewEnergyProcessor(
-	FOwnerPawnType* CharacterPtr
-	):
-	 Super(CharacterPtr)
-{
-}
 
 void TourProcessor::FViewSingleFloorViewEnergyProcessor::EnterAction()
 {
@@ -23,21 +13,6 @@ void TourProcessor::FViewSingleFloorViewEnergyProcessor::EnterAction()
 	SwitchShowCursor(true);
 	
 	SwitchRender(false);
-
-	auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-	if (OnwerActorPtr)
-	{
-		auto GameOptionsPtr = UGameOptions::GetInstance();
-
-		OnwerActorPtr->UpdateControlParam(GameOptionsPtr->ViewFloorControlParam);
-		
-		UpdateCameraArmLen(GameOptionsPtr->
-						   ViewFloorControlParam, 0);
-
-		UpdateCameraClampPitch(GameOptionsPtr->
-						   ViewFloorControlParam);
-					
-	}
 }
 
 bool TourProcessor::FViewSingleFloorViewEnergyProcessor::InputKey(
@@ -48,29 +23,6 @@ bool TourProcessor::FViewSingleFloorViewEnergyProcessor::InputKey(
 	{
 	case IE_Pressed:
 		{
-			auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-			if (!OnwerActorPtr)
-			{
-				return false;
-			}
-
-			auto GameOptionsPtr = UGameOptions::GetInstance();
-
-			if (EventArgs.Key == GameOptionsPtr->RotBtn)
-			{
-				bHasRoted = false;
-
-				bStartRot = true;
-				return true;
-			}
-
-			if (EventArgs.Key == GameOptionsPtr->MoveBtn)
-			{
-				bHasMoved = false;
-
-				bStartMove = true;
-				return true;
-			}
 		}
 		break;
 	case IE_Released:
@@ -120,103 +72,7 @@ bool TourProcessor::FViewSingleFloorViewEnergyProcessor::InputAxis(
 	{
 	case IE_Axis:
 		{
-			auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-			if (!OnwerActorPtr)
-			{
-				return false;
-			}
-
 			auto GameOptionsPtr = UGameOptions::GetInstance();
-
-			if (EventArgs.Key == GameOptionsPtr->MouseX)
-			{
-				if (OnwerActorPtr->Controller != nullptr)
-				{
-					if (bStartRot)
-					{
-						bHasRoted = true;
-
-						const auto Rot = EventArgs.AmountDepressed * EventArgs.DeltaTime * GameOptionsPtr->
-						                 ViewFloorControlParam.RotYawSpeed;
-						OnwerActorPtr->AddControllerYawInput(Rot);
-
-						return true;
-					}
-					else if (bStartMove)
-					{
-						bHasMoved = true;
-
-						const FRotator Rotation = OnwerActorPtr->Controller->GetControlRotation();
-
-						const FVector Direction = UKismetMathLibrary::MakeRotFromZX(
-							 FVector::UpVector,
-							 Rotation.Quaternion().GetRightVector()
-							).Vector();
-
-						const auto Value = EventArgs.AmountDepressed * EventArgs.DeltaTime * GameOptionsPtr->
-						                   ViewFloorControlParam.MoveSpeed;
-
-						OnwerActorPtr->AddMovementInput(
-						                                Direction,
-						                                Value
-						                               );
-
-						return true;
-					}
-				}
-			}
-
-			if (EventArgs.Key == GameOptionsPtr->MouseY)
-			{
-				if (OnwerActorPtr->Controller != nullptr)
-				{
-					if (bStartRot)
-					{
-						bHasRoted = true;
-
-						const auto Rot = EventArgs.AmountDepressed * EventArgs.DeltaTime * GameOptionsPtr->
-						                 ViewFloorControlParam.RotPitchSpeed;
-						OnwerActorPtr->AddControllerPitchInput(-Rot);
-
-						return true;
-					}
-					else if (bStartMove)
-					{
-						bHasMoved = true;
-
-						const FRotator Rotation = OnwerActorPtr->Controller->GetControlRotation();
-
-						const FVector Direction = UKismetMathLibrary::MakeRotFromZX(
-							 FVector::UpVector,
-							 Rotation.Quaternion().GetForwardVector()
-							).Vector();
-
-						const auto Value = EventArgs.AmountDepressed * EventArgs.DeltaTime * GameOptionsPtr->
-						                   ViewFloorControlParam.MoveSpeed;
-
-						OnwerActorPtr->AddMovementInput(
-						                                Direction,
-						                                Value
-						                               );
-
-						return true;
-					}
-				}
-			}
-
-			if (EventArgs.Key == GameOptionsPtr->MouseWheelAxis)
-			{
-				if (OnwerActorPtr->Controller != nullptr)
-				{
-					const auto Value = EventArgs.AmountDepressed * EventArgs.DeltaTime * GameOptionsPtr->
-					                   ViewFloorControlParam.CameraSpringArmSpeed;
-
-					UpdateCameraArmLen(GameOptionsPtr->
-									   ViewFloorControlParam, Value);
-					
-					return true;
-				}
-			}
 		}
 		break;
 	default: ;

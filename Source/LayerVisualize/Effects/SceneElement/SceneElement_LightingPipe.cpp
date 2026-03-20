@@ -9,19 +9,9 @@
 #include "Engine/RectLight.h"
 #include "Kismet/KismetStringLibrary.h"
 
-#include "TourPawn.h"
-#include "IPSSI.h"
-#include "MessageBody.h"
 #include "RouteMarker.h"
 #include "SceneElement_PWR_Pipe.h"
-#include "SceneInteractionDecorator_Area.h"
-#include "SceneInteractionDecorator_Mode.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
-#include "TemplateHelper.h"
-#include "ViewSingleDeviceProcessor.h"
-#include "WeatherSystem.h"
-#include "WebChannelWorldSystem.h"
 
 ASceneElement_LightingPipe::ASceneElement_LightingPipe(
 	const FObjectInitializer& ObjectInitializer
@@ -198,30 +188,11 @@ void ASceneElement_LightingPipe::SwitchInteractionType(
 			// SetEmissiveValue(0, -1, FColor::White);
 			SwitchLight(0, -1, FColor::White);
 
-			auto TempPipePtr = USceneInteractionWorldSystem::GetInstance()->FindSceneActor(PWR_ID);
-			if (!TempPipePtr .IsValid())
-			{
-				return;
-			}
-
-			auto PipePtr = Cast<ASceneElement_PWR_Pipe>(TempPipePtr);
-			if (!PipePtr)
-			{
-				return;
-			}
-			
-			if (!PipePtr->ExtensionParamMap.Contains(TEXT("value")))
-			{
-				return;
-			}
-			
 			CacheOriginalMat(StaticMeshComponentsAry);
 			auto EnergyMaterialInst = UAssetRefMap::GetInstance()->EnergyDeviceMaterialInst.LoadSynchronous();
 
 			auto MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(EnergyMaterialInst, this);
 
-			const auto EnergyValue = PipePtr->EnergyValue;
-			MaterialInstanceDynamic->SetScalarParameterValue(TEXT("EnergyValue"), EnergyValue);
 			for (auto Iter : StaticMeshComponentsAry)
 			{
 				if (Iter)

@@ -9,7 +9,6 @@
 #include "GameOptions.h"
 #include "IPSSI.h"
 #include "LogWriter.h"
-#include "PlanetPlayerCameraManager.h"
 #include "SceneElementCategory.h"
 #include "SceneElement_DeviceBase.h"
 #include "SceneElement_PWR_Pipe.h"
@@ -23,9 +22,6 @@
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
 #include "ViewTowerProcessor.h"
-#include "ViewSingleDeviceProcessor.h"
-#include "ViewSingleFloorProcessor.h"
-#include "TourPawn.h"
 #include "ViewerPawnBase.h"
 #include "WebChannelWorldSystem.h"
 
@@ -876,27 +872,6 @@ void FMessageBody_Receive_AdjustCameraSeat::DoAction() const
 	ConfigControlConfig.ViewPitchMax = MaxPitch;
 	DecoratorSPtr->UpdateControlConfig(ConfigControlConfig);
 
-	{
-		auto ViewBuildingProcessorSPtr = DynamicCastSharedPtr<TourProcessor::FViewTowerProcessor>(
-			 UInputProcessorSubSystem_Imp::GetInstance()->GetCurrentAction()
-			);
-		if (ViewBuildingProcessorSPtr)
-		{
-			Cast<APlanetPlayerCameraManager>(
-			                                 GEngine->GetFirstLocalPlayerController(GetWorldImp())->PlayerCameraManager
-			                                )->UpdateCameraSetting();
-
-			ViewBuildingProcessorSPtr->AdjustCameraSeat(FRotator(MinPitch, 0, 0));
-			return;
-		}
-	}
-	{
-		Cast<APlanetPlayerCameraManager>(
-		                                 GEngine->GetFirstLocalPlayerController(GetWorldImp())->PlayerCameraManager
-		                                )->UpdateCameraSetting();
-
-		return;
-	}
 }
 
 TSharedPtr<FJsonObject> FMessageBody_ViewDevice::SerializeBody() const
@@ -1187,17 +1162,6 @@ TSharedPtr<FJsonObject> FMessageBody_UE_Tick::SerializeBody() const
 	                           );
 
 	TArray<TSharedPtr<FJsonValue>> Array;
-
-	const auto IDs = UWebChannelWorldSystem::GetInstance()->ConnetedPlayerIds;
-	for (auto Iter : IDs )
-	{
-		Array.Add(MakeShared<FJsonValueString>(Iter));
-	}
-	
-	RootJsonObj->SetArrayField(
-	                            TEXT("ConnectedID"),
-	                            Array
-	                           );
 
 	return RootJsonObj;
 }

@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HoverWidgetBase.h"
 
-#include "Blueprint/UserWidget.h"
+#include "HoverWidgetBase.h"
 
 #include "RouteMarker.generated.h"
 

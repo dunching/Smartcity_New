@@ -15,7 +15,7 @@ public class LayerController : ModuleRules
 
         CppStandard = CppStandardVersion.Cpp20;
         
-        bUseRTTI = false;
+        bUseRTTI = true;
 
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {
@@ -28,26 +28,37 @@ public class LayerController : ModuleRules
         PublicIncludePaths.Add("LayerController/Imp_InputProcessor/InputProcessor/TourProcessor");
         PublicIncludePaths.Add("LayerController/SceneInteractionDecorator");
         PublicIncludePaths.Add("LayerController/PixelStreaming");
+        PublicIncludePaths.Add("LayerController/GameplayTasks");
 
-        PrivateDependencyModuleNames.AddRange(new string[] { });
-        
         PrivateDependencyModuleNames.AddRange(new string[] {
+            // 引擎内容
             "Core",
             "CoreUObject",
             "Engine",
+        });
+
+        PublicDependencyModuleNames.AddRange(new string[] {
+            // 引擎插件
+            "PixelStreaming",
+            "Json",
+            "GameplayTasks",
+            "DatasmithContent",
             
+            // 插件
             "Utils",
             "GameOptions",
             "Weather",
             "CommonType",
             "StateProcessor",
             "GameplayTags",
+            "SmartCitySuite",
+            "BuildingTools",
+            "GameplayTaskHelper",
             
+            // 其他模块
             "LayerData",
             "LayerVisualize",
-        });
-
-        PublicDependencyModuleNames.AddRange(new string[] {
+            "AssetRef",
         });
     }
 }

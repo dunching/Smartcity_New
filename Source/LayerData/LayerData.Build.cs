@@ -21,18 +21,57 @@ public class LayerData : ModuleRules
         {
         }
 
+        PrivateDefinitions.Add("LOGQUERY = 0");
+        PrivateDefinitions.Add("RECODETIME = 0");
+
+        PrivateDefinitions.Add("USEFRONTENDDATA = 1");  
+
+        PrivateDefinitions.Add("USEBACKENDDATA = 0");  
+
         PublicIncludePaths.Add("LayerData");
         PublicIncludePaths.Add("LayerData/LayerData");
         PublicIncludePaths.Add("LayerData/PIxelStreaming");
         PublicIncludePaths.Add("LayerData/QueryDeviceInfoSubSystem");
 
-        PrivateDependencyModuleNames.AddRange(new string[] { });
-        
         PrivateDependencyModuleNames.AddRange(new string[] {
+            // 引擎内容
             "Core",
             "CoreUObject",
             "Engine",
+            "InputCore",
+            "SlateCore",
+            "Slate",
+            "UMG",
+            "EnhancedInput",
+            "AIModule",
+            "StateTreeModule",
+            "NavigationSystem",
+            "ChaosVehicles",
+            "ActorSequence",
+            "NetCore",
+            "ShaderConductor",
+            "Json",
+            "MediaAssets",
+            "DatasmithContent",
+            "MovieScene",
+            
+            // 引擎插件
+            "GameplayTags",
+            "GameplayTasks",
+            "GameplayAbilities",
+            "GameplayStateTreeModule",
+            "GameplayAbilities",
+            "GameplayCameras",
+            "Niagara",
             "PixelStreaming",
+            "GeometryFramework",
+            "HTTP",
+            "WebSockets",
+            "Sockets",
+            "PixelStreaming",
+        });
+
+        PublicDependencyModuleNames.AddRange(new string[] {
             
             // 插件
             "GameplayTags",
@@ -51,9 +90,6 @@ public class LayerData : ModuleRules
             "GameplayTagsLibrary",
             "Tools", 
             "DTMqtt", 
-        });
-
-        PublicDependencyModuleNames.AddRange(new string[] {
         });
     }
 }

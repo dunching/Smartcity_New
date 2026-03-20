@@ -1,8 +1,6 @@
 #include "Building_Stairs.h"
 
 #include "AssetRefMap.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
 
@@ -40,41 +38,6 @@ void ABuilding_Stairs::SwitchInteractionType(
 		if ((ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
 			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)))
 		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-															 USceneInteractionWorldSystem::GetInstance()->
-															 GetDecorator(
-																		  USmartCitySuiteTags::Interaction_Interaction
-																		 )
-															);
-			if (DecoratorSPtr)
-			{
-				const auto ViewConfig = DecoratorSPtr->GetViewConfig();
-				if (ViewConfig.StairsTranlucent <= 0)
-				{
-					SwitchState(EState::kHiden);
-				}
-				else if (ViewConfig.StairsTranlucent >= 100)
-				{
-					SwitchState(EState::kOriginal);
-				}
-				else
-				{
-			SetActorHiddenInGame(false);
-
-					TArray<UStaticMeshComponent*> Components;
-					GetComponents<UStaticMeshComponent>(Components);
-
-					SetTranslucentImp(
-									  Components,
-									  ViewConfig.StairsTranlucent,
-									  UAssetRefMap::GetInstance()->StairsTranslucentMatInst.LoadSynchronous()
-									 );
-				}
-
-				return;
-			}
 
 			SwitchState(EState::kOriginal);
 

@@ -5,9 +5,9 @@
 
 #include "GameplayTagContainer.h"
 
-#include "AssetRefBase.h"
 #include "GenerateTypes.h"
 #include "BuildingGenerateTypes.h"
+#include "AssetRefBase.h"
 
 #include "AssetRefMap.generated.h"
 

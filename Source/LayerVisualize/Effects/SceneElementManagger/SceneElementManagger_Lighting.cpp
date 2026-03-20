@@ -8,8 +8,6 @@
 
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
-#include "PlanetPlayerController.h"
 #include "SmartCitySuiteTags.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
@@ -296,54 +294,6 @@ TArray<TObjectPtr<UGameplayTaskBase>> ASceneElementManagger_Lighting::SwitchFloo
 	) const
 {
 	TArray<TObjectPtr<UGameplayTaskBase>> Result;
-
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-
-	int32 FloorIndex = 0;
-	for (auto Iter : UAssetRefMap::GetInstance()->FloorHelpers)
-	{
-		if (ConditionalSet.ConditionalSet.HasTag(Iter.Key))
-		{
-			FloorIndex = Iter.Value->FloorIndex;
-		}
-	}
-
-	{
-		auto GameplayTaskPtr = UGameplayTask::NewTask<UGT_SwitchSceneElementManagger_Lighting_Display>(
-			 TScriptInterface<
-				 IGameplayTaskOwnerInterface>(
-				                              PCPtr
-				                             )
-			);
-
-		for (const auto& Iter : FloorIndexMap)
-		{
-			if (Iter.Key == FloorIndex)
-			{
-				GameplayTaskPtr->DisplayAry.Append(Iter.Value);
-			}
-		}
-
-		Result.Add(GameplayTaskPtr);
-	}
-	{
-		auto GameplayTaskPtr = UGameplayTask::NewTask<UGT_SwitchSceneElementManagger_Lighting_Hide>(
-			 TScriptInterface<
-				 IGameplayTaskOwnerInterface>(
-				                              PCPtr
-				                             )
-			);
-
-		for (const auto& Iter : FloorIndexMap)
-		{
-			if (Iter.Key != FloorIndex)
-			{
-				GameplayTaskPtr->HideAry.Append(Iter.Value);
-			}
-		}
-
-		Result.Add(GameplayTaskPtr);
-	}
 
 	return Result;
 }

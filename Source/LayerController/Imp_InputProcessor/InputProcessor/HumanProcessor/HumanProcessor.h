@@ -39,8 +39,6 @@ namespace HumanProcessor
 
 		using FOwnerPawnType = AHumanCharacter_Player;
 
-		FHumanProcessor(FOwnerPawnType* CharacterPtr);
-
 		virtual void EnterAction()override;
 
 	protected:

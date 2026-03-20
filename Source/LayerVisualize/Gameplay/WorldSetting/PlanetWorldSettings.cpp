@@ -5,9 +5,6 @@
 
 #include "DataTableCollection.h"
 #include "AssetRefMap.h"
-#include "IPSSI.h"
-#include "DataTableCollection.h"
-#include "AssetRefMap.h"
 
 void APlanetWorldSettings::PostInitializeComponents()
 {
@@ -27,14 +24,4 @@ UAssetRefMap* APlanetWorldSettings::GetAssetRefMapInstance() const
 UDataTableCollection* APlanetWorldSettings::GetSceneProxyExtendInfoMap() const
 {
 	return SceneProxyExtendInfoMapPtr.LoadSynchronous();
-}
-
-UInputProcessorSubSystemBase* APlanetWorldSettings::GetInputProcessorSubSystem() const
-{
-	return Cast<UInputProcessorSubSystem_Imp>(
-									 USubsystemBlueprintLibrary::GetGameInstanceSubsystem(
-										  GetWorldImp(),
-										  UInputProcessorSubSystem_Imp::StaticClass()
-										 )
-									);
 }

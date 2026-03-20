@@ -6,12 +6,8 @@
 
 #include "GameFramework/Pawn.h"
 
-#include "GameOptions.h"
-#include "SceneElementBase.h"
 #include "SceneElementManaggerBase.h"
-#include "SceneElement_DeviceBase.h"
-#include "GenerateTypes.h"
-#include "PlayerGameplayTasks.h"
+#include "GameplayTaskHelper.h"
 
 #include "SceneElementManagger_Lighting.generated.h"
 

@@ -26,8 +26,6 @@ namespace TourProcessor
 	public:
 		using FOwnerPawnType = ATourPawn;
 
-		FViewSplitFloorProcessor(FOwnerPawnType* CharacterPtr);
-
 		virtual void EnterAction() override;
 
 		virtual bool InputKey(

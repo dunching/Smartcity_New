@@ -7,9 +7,7 @@
 
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "MessageBody.h"
 #include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
 #include "ComputerMark.h"
 #include "Components/TextBlock.h"
 
@@ -306,12 +304,6 @@ void ASceneElement_Computer::EntryFocusDevice()
 
 	SetActorHiddenInGame(false);
 
-	auto MessageBodySPtr = MakeShared<FMessageBody_ViewDevice>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-	MessageBodySPtr->Type = DeviceTypeStr;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);
 }
 
 void ASceneElement_Computer::EntryViewDevice()

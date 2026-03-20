@@ -8,13 +8,6 @@
 APlanetPlayerController::APlanetPlayerController(const FObjectInitializer& ObjectInitializer) :
                                                                                               Super(ObjectInitializer)
 {
-	GameplayTasksComponentPtr = CreateDefaultSubobject<UPlayerControllerGameplayTasksComponent>(
-		UPlayerControllerGameplayTasksComponent::ComponentName
-	);
-
-	PixelStreamingInputPtr = CreateDefaultSubobject<UPixelStreamingInput>(
-		TEXT("PixelStreamingInput")
-	);
 }
 
 void APlanetPlayerController::OnPossess(APawn* InPawn)
@@ -26,9 +19,4 @@ void APlanetPlayerController::OnPossess(APawn* InPawn)
 	if (bIsNewPawn)
 	{
 	}
-
-	UWebChannelWorldSystem::GetInstance()->BindEvent();
-	UWebChannelWorldSystem::GetInstance()->InitializeDeserializeStrategies();
-
-	USceneInteractionWorldSystem::GetInstance()->SwitchInteractionOption(USmartCitySuiteTags::Interaction_Interaction_Space);
 }

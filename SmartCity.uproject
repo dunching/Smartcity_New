@@ -102,6 +102,10 @@
 		{
 			"Name": "Weather",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayTaskHelper",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

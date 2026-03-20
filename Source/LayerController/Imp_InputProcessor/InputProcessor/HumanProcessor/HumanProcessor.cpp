@@ -6,8 +6,6 @@
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "HumanCharacter_Player.h"
-#include "GameplayTagsLibrary.h"
 #include "GameOptions.h"
 
 #ifdef WITH_EDITOR
@@ -20,11 +18,6 @@ static TAutoConsoleVariable<int32> DrawDebugHumanProcessor(
 
 namespace HumanProcessor
 {
-	FHumanProcessor::FHumanProcessor(FOwnerPawnType* CharacterPtr) :
-		Super(CharacterPtr)
-	{
-	}
-
 	void FHumanProcessor::EnterAction()
 	{
 		Super::EnterAction();
@@ -55,33 +48,13 @@ namespace HumanProcessor
 
 	void FHumanProcessor::SwitchWalkingOrRunning()
 	{
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-
-		if (OnwerActorPtr)
-		{
-		}
 	}
 
 	void FHumanProcessor::Dash()
 	{
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-
-		if (OnwerActorPtr)
-		{
-			auto EnhancedInputLocalPlayerSubsystemPtr = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-				Cast<APlayerController>(OnwerActorPtr->GetController())->GetLocalPlayer()
-			);
-
-
-		}
 	}
 
 	void FHumanProcessor::Jump()
 	{
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-
-		if (OnwerActorPtr)
-		{
-		}
 	}
 }

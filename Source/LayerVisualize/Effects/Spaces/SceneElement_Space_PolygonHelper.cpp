@@ -1,8 +1,5 @@
 #include "SceneElement_Space_PolygonHelper.h"
 
-#include "SceneInteractionDecorator_Option.h"
-#include "SceneInteractionWorldSystem.h"
-#include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 
 #include "SmartCitySuiteTags.h"
@@ -104,32 +101,6 @@ void ASceneElement_Space_PolygonHelper::EntryFocusDevice(
 	const FSceneElementConditional& ConditionalSet
 	)
 {
-	// 确认当前的模式
-	auto DecoratorSPtr =
-		DynamicCastSharedPtr<FInteraction_Decorator>(
-		                                             USceneInteractionWorldSystem::GetInstance()->
-		                                             GetDecorator(
-		                                                          USmartCitySuiteTags::Interaction_Interaction
-		                                                         )
-		                                            );
-	if (DecoratorSPtr)
-	{
-		switch (DecoratorSPtr->GetInteractionType())
-		{
-		case EInteractionType::kDevice:
-			{
-				SetActorHiddenInGame(true);
-			}
-			break;
-		case EInteractionType::kSpace:
-			{
-				SetActorHiddenInGame(false);
-
-				SetColor(FocusColor);
-			}
-			break;
-		}
-	}
 }
 
 void ASceneElement_Space_PolygonHelper::EntryShowevice(
@@ -145,31 +116,6 @@ void ASceneElement_Space_PolygonHelper::EntryShoweviceEffect(
 	const FSceneElementConditional& ConditionalSet
 	)
 {
-	// 确认当前的模式
-	auto DecoratorSPtr =
-		DynamicCastSharedPtr<FInteraction_Decorator>(
-		                                             USceneInteractionWorldSystem::GetInstance()->
-		                                             GetDecorator(
-		                                                          USmartCitySuiteTags::Interaction_Interaction
-		                                                         )
-		                                            );
-	if (DecoratorSPtr)
-	{
-		switch (DecoratorSPtr->GetInteractionType())
-		{
-		case EInteractionType::kDevice:
-			{
-				SetActorHiddenInGame(true);
-			}
-			break;
-		case EInteractionType::kSpace:
-			{
-				SetActorHiddenInGame(false);
-
-				SetColor(NormalColor);
-			}
-		}
-	}
 }
 
 void ASceneElement_Space_PolygonHelper::QuitAllState()

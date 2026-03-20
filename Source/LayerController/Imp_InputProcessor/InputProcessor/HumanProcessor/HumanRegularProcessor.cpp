@@ -3,13 +3,9 @@
 #include "DrawDebugHelpers.h"
 #include "Async/Async.h"
 #include "Engine/LocalPlayer.h"
-#include "AbilitySystemBlueprintLibrary.h"
 
-#include "HumanCharacter_Player.h"
 #include "InputProcessorSubSystemBase.h"
 
-#include "GameplayTagsLibrary.h"
-#include "HumanCharacter_AI.h"
 #include "IPSSI.h"
 
 static TAutoConsoleVariable<int32> HumanRegularProcessor(
@@ -21,13 +17,6 @@ static TAutoConsoleVariable<int32> HumanRegularProcessor(
 
 namespace HumanProcessor
 {
-	FHumanRegularProcessor::FHumanRegularProcessor(
-		FOwnerPawnType* CharacterPtr
-		) :
-		  Super(CharacterPtr)
-	{
-	}
-
 	FHumanRegularProcessor::~FHumanRegularProcessor()
 	{
 	}
@@ -43,8 +32,6 @@ namespace HumanProcessor
 
 		SwitchCurrentWeapon();
 
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-		if (OnwerActorPtr)
 		{
 			SwitchShowCursor(false);
 
@@ -58,21 +45,11 @@ namespace HumanProcessor
 	{
 		Super::TickImp(Delta);
 
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-		if (!OnwerActorPtr)
-		{
-			return;
-		}
 
 	}
 
 	void FHumanRegularProcessor::SwitchWeapon()
 	{
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-
-		if (OnwerActorPtr)
-		{
-		}
 	}
 
 	void FHumanRegularProcessor::SwitchCurrentWeapon()
@@ -83,12 +60,6 @@ namespace HumanProcessor
 	{
 		AddOrRemoveUseMenuItemEvent(false);
 
-		// UUIManagerSubSystem::GetInstance()->DisplayActionLayout(false);
-
-		auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-		if (OnwerActorPtr)
-		{
-		}
 
 		Super::QuitAction();
 	}
@@ -101,11 +72,6 @@ namespace HumanProcessor
 		{
 		case IE_Pressed:
 			{
-				auto OnwerActorPtr = GetOwnerActor<FOwnerPawnType>();
-				if (!OnwerActorPtr)
-				{
-					return false;
-				}
 			}
 			break;
 		case IE_Released:

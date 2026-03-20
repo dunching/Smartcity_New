@@ -1,7 +1,6 @@
 #include "SceneInteractionDecorator_Mode.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "Net/WebChannelWorldSystem.h"
 #include "Components/BoxComponent.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
@@ -14,12 +13,10 @@
 #include "Dynamic_WeatherBase.h"
 #include "FireMark.h"
 #include "FloorHelper.h"
-#include "PlanetPlayerController.h"
 #include "PlayerGameplayTasks.h"
 #include "SceneElement_PWR_Pipe.h"
 #include "TemplateHelper.h"
 #include "FloorHelperBase.h"
-#include "NavagationPaths.h"
 #include "SceneElementCategory.h"
 #include "SceneElement_Space.h"
 #include "SmartCitySuiteTags.h"
@@ -155,25 +152,6 @@ void FEmergencyMode_Decorator::Spawn(
 		const auto AreaTag = AreaDecoratorSPtr->GetCurrentInteraction_Area();
 		if (Iter.Value->NavagationPaths.ToSoftObjectPath().IsValid())
 		{
-			if (
-				AreaTag.MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF) ||
-				AreaTag.MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF_1) ||
-				AreaTag.MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF_2) ||
-				AreaTag.MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF_3)
-			)
-			{
-				Iter.Value->NavagationPaths->SwitchDisplay(
-				                                           false
-				                                          );
-			}
-			else
-			{
-				Iter.Value->NavagationPaths->SwitchDisplay(
-				                                           Iter.Value->FloorTag.MatchesTag(
-					                                            AreaTag
-					                                           )
-				                                          );
-			}
 		}
 
 		if (Iter.Value->FloorTag == AreaDecoratorSPtr->GetBranchDecoratorType())
@@ -239,31 +217,6 @@ void FEmergencyMode_Decorator::Spawn(
 
 void FEmergencyMode_Decorator::Clear()
 {
-	for (const auto& Iter : UAssetRefMap::GetInstance()->FloorHelpers)
-	{
-		if (Iter.Value->NavagationPaths.ToSoftObjectPath().IsValid())
-		{
-			Iter.Value->NavagationPaths->SwitchDisplay(false);
-		}
-	}
-
-	for (const auto& Iter : FireMarkSet)
-	{
-		if (Iter)
-		{
-			Iter->Destroy();
-		}
-	}
-	FireMarkSet.Empty();
-
-	for (const auto& Iter : WarningMarkSet)
-	{
-		if (Iter)
-		{
-			Iter->Destroy();
-		}
-	}
-	WarningMarkSet.Empty();
 }
 
 FEnvironmentalPerceptionMode_Decorator::FEnvironmentalPerceptionMode_Decorator() :
@@ -487,38 +440,6 @@ void FSingleDeviceMode_Decorator::Entry()
 {
 	Super::Entry();
 
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_CameraTransformLocaterByID>(
-		 false,
-		 true,
-		 [this](
-		 UGT_CameraTransformLocaterByID* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->TargetDevicePtr = TargetDevicePtr;
-			 }
-		 }
-		);
-
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-
-	if (!AreaDecoratorSPtr)
-	{
-		return;
-	}
-
-	const auto AreaTag = AreaDecoratorSPtr->GetCurrentInteraction_Area();
-	if (UAssetRefMap::GetInstance()->FloorHelpers.Contains(AreaTag))
-	{
-		auto FloorPtr = UAssetRefMap::GetInstance()->FloorHelpers[AreaTag];
-	}
 }
 
 FBatchControlMode_Decorator::FBatchControlMode_Decorator() :

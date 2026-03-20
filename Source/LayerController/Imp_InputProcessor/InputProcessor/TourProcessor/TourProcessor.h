@@ -27,8 +27,6 @@ namespace TourProcessor
 	public:
 		using FOwnerPawnType = ATourPawn;
 
-		FTourProcessor(FOwnerPawnType* CharacterPtr);
-
 	protected:
 
 		bool UpdateCameraArmLen(const FControlParam&ControlParam,float OffsetValue);

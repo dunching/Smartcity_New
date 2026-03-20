@@ -5,13 +5,11 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Engine/StaticMeshActor.h"
+#include "Components/BoxComponent.h"
 
 #include "AssetRefMap.h"
 #include "FloorHelper.h"
-#include "MessageBody.h"
 #include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
-#include "Components/BoxComponent.h"
 
 ASceneElement_RollerBlind::ASceneElement_RollerBlind(
 	const FObjectInitializer& ObjectInitializer
@@ -245,12 +243,6 @@ void ASceneElement_RollerBlind::EntryFocusDevice()
 		}
 	}
 
-	auto MessageBodySPtr = MakeShared<FMessageBody_ViewDevice>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-	MessageBodySPtr->Type = DeviceTypeStr;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);
 }
 
 void ASceneElement_RollerBlind::EntryViewDevice()

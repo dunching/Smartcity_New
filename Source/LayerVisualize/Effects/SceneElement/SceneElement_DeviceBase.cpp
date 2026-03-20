@@ -11,13 +11,8 @@
 #include "AssetRefMap.h"
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
 #include "HttpModule.h"
-#include "MessageBody.h"
-#include "RouteMarker.h"
 #include "SceneElement_Space.h"
-#include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
 
 
 ASceneElement_DeviceBase::ASceneElement_DeviceBase(
@@ -604,7 +599,6 @@ TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> ASceneElement_DeviceBase::QueryDev
 		Request->SetURL(Url);
 		Request->SetVerb(TEXT("POST"));
 		Request->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
-		Request->SetHeader(TEXT("user"), UWebChannelWorldSystem::GetInstance()->QueryDeviceToken);
 		Request->SetContentAsString(PostData);
 
 		// 5. 回调

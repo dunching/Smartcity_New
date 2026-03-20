@@ -8,8 +8,6 @@
 
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
-#include "PlanetPlayerController.h"
 #include "SmartCitySuiteTags.h"
 #include "AssetRefMap.h"
 
@@ -235,23 +233,6 @@ TArray<TObjectPtr<UGameplayTaskBase>> ASceneElementManagger_Furniture::SwitchFlo
 	) const
 {
 	TArray<TObjectPtr<UGameplayTaskBase>> Result;
-
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-
-	int32 FloorIndex = 0;
-	for (auto Iter : UAssetRefMap::GetInstance()->FloorHelpers)
-	{
-		if (ConditionalSet.ConditionalSet.HasTag(Iter.Key))
-		{
-			FloorIndex = Iter.Value->FloorIndex;
-		}
-	}
-
-	{
-	}
-	
-	{
-	}
 
 	return Result;
 }

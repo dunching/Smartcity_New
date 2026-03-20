@@ -38,7 +38,5 @@ public class AssetRef : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new string[] {
         });
-
-        // b*[^:b#/]+.*$
     }
 }

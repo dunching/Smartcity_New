@@ -12,11 +12,6 @@
 #include "DTMqttClient.h"
 #include "HttpModule.h"
 #include "LogWriter.h"
-#include "PlanetGameInstance.h"
-#include "QueryHelperSubSystem.h"
-#include "SceneElement_Space.h"
-#include "SceneInteractionWorldSystem.h"
-#include "SpaceManaggerSubSystem.h"
 
 UQueryDeviceInfoSubSystem* UQueryDeviceInfoSubSystem::GetInstance()
 {
@@ -36,87 +31,10 @@ void UQueryDeviceInfoSubSystem::StartUpdateMQTT()
 
 void UQueryDeviceInfoSubSystem::StartQueryEnergyInfo()
 {
-	auto OnceQueryHelperInstPtr = UOnceQueryHelperSubSystem::GetInstance();
-
-	const auto EnergyGroupSceneElementMap = USceneInteractionWorldSystem::GetInstance()->EnergyGroupSceneElementMap;
-
-	FOnceQuerySteps OnceQuerySteps;
-
-	TSharedPtr<FJsonObject> RootJsonObj = MakeShareable<FJsonObject>(new FJsonObject);
-
-	for (auto Iter : EnergyGroupSceneElementMap)
-	{
-		OnceQuerySteps.StepAry.Add(
-		                           {
-			                           std::bind(&ThisClass::QueryEnergyID, this, Iter.Key),
-			                           std::bind(
-			                                     &ThisClass::QueryEnergyIDComplete,
-			                                     this,
-			                                     std::placeholders::_1,
-			                                     std::placeholders::_2,
-			                                     std::placeholders::_3,
-			                                     Iter.Key
-			                                    )
-		                           }
-		                          );
-
-		TSharedRef<FJsonObject> JsonTracedPoses = MakeShareable(new FJsonObject);
-
-		RootJsonObj->SetStringField(
-		                            Iter.Key,
-		                            Iter.Key
-		                           );
-	}
-	OnceQueryHelperInstPtr->AddQuerySteps(OnceQuerySteps);
-
-	FString JsonString;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
-	FJsonSerializer::Serialize(
-	                           RootJsonObj.ToSharedRef(),
-	                           Writer
-	                          );
-
-#if LOGQUERY
-
-	{
-		int32 Day = -1;
-		int32 Hour = -1;
-		UKismetLogger::WriteLog(TEXT("PWR_List"), JsonString, Day, Hour);
-	}
-#endif
 }
 
 void UQueryDeviceInfoSubSystem::StartQueryEnergyValue()
 {
-	auto OnceQueryHelperInstPtr = UQueryHelperSubSystem::GetInstance();
-
-	FQuerySteps OnceQuerySteps;
-
-	const auto EnergyGroupSceneElementMap = USceneInteractionWorldSystem::GetInstance()->EnergyGroupSceneElementMap;
-	for (auto Iter : EnergyGroupSceneElementMap)
-	{
-		for (auto SecondIter : Iter.Value)
-		{
-			if (SecondIter)
-			{
-				OnceQuerySteps.StepAry.Add(
-				                           {
-					                           std::bind(&ThisClass::QueryEnergyValue, this, Iter.Key),
-					                           std::bind(
-					                                     &ThisClass::QueryEnergyValueComplete,
-					                                     this,
-					                                     std::placeholders::_1,
-					                                     std::placeholders::_2,
-					                                     std::placeholders::_3,
-					                                     Iter.Key
-					                                    )
-				                           }
-				                          );
-			}
-		}
-	}
-
-	OnceQueryHelperInstPtr->AddQuerySteps(OnceQuerySteps);
 }
 
 void UQueryDeviceInfoSubSystem::FQueryDeviceInfo::Deserialize(
@@ -452,14 +370,6 @@ void UQueryDeviceInfoSubSystem::QuerySpaceInfoComplete(
 
 	QuerySpaceInfo_.Deserialize(ResponStr->GetContentAsString());
 
-	auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-	for (const auto& Iter : QuerySpaceInfo_.body_Ary)
-	{
-		SpaceManaggerSubSystem->SpaceIDMap.Add(Iter.Value.id, Iter.Value.bimId);
-	}
-
-
 	QueryAllSpaceDeviceInfo();
 }
 
@@ -570,29 +480,6 @@ void UQueryDeviceInfoSubSystem::QueryAllSpaceDeviceInfoComplete(
 			}
 		}
 
-		auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-		for (const auto& Iter : DeviceInfo.DeviceMap)
-		{
-			for (const auto& SecondIter : Iter.Value)
-			{
-				if (auto SpaceIDIter = SpaceManaggerSubSystem->SpaceIDMap.Find(SecondIter.Value.spaceId))
-				{
-					if (auto SpaceDeviceIter = SpaceManaggerSubSystem->SpaceDeviceMap.Find(SecondIter.Value.deviceId))
-					{
-						SpaceDeviceIter->Add(*SpaceIDIter, SecondIter.Value.serialid);
-					}
-					else
-					{
-						SpaceManaggerSubSystem->SpaceDeviceMap.Add(
-						                                           SecondIter.Value.deviceId,
-						                                           {{*SpaceIDIter, SecondIter.Value.serialid}}
-						                                          );
-					}
-				}
-			}
-		}
-
 		QueryAllSpaceDeviceInfo(++Index);
 	}
 
@@ -695,42 +582,6 @@ void UQueryDeviceInfoSubSystem::FEnergyValue::DoAction(
 	const FString& bimId
 	)
 {
-	auto Inst = USceneInteractionWorldSystem::GetInstance();
-
-	for (const auto& Iter : BimIDMap)
-	{
-		auto SceneElementPtr = Inst->EnergyGroupSceneElementMap.Find(bimId);
-		if (SceneElementPtr)
-		{
-#if LOGQUERY
-			{
-				int32 Day = -1;
-				int32 Hour = -1;
-				UKismetLogger::WriteLog(TEXT("EnergyValue_Found"), bimId, Day, Hour);
-			}
-#endif
-
-
-			for (auto SecondIter : *SceneElementPtr)
-			{
-				TMap<FString, FString> NewExtensionParamMap{
-					{TEXT("value"), FString::SanitizeFloat(Iter.Value * 1000)}
-				};
-
-				SecondIter->UpdateExtensionParamMap(NewExtensionParamMap, true);
-			}
-		}
-		else
-		{
-#if LOGQUERY
-			{
-				int32 Day = -1;
-				int32 Hour = -1;
-				UKismetLogger::WriteLog(TEXT("EnergyValue_CantFind"), bimId, Day, Hour);
-			}
-#endif
-		}
-	}
 }
 
 TSharedPtr<IHttpRequest, ESPMode::ThreadSafe> UQueryDeviceInfoSubSystem::QueryEnergyID(
@@ -1223,35 +1074,6 @@ void UQueryDeviceInfoSubSystem::ConectionMQTT()
 
 void UQueryDeviceInfoSubSystem::ConectionImp()
 {
-	bool Success;
-	FString ErrorMsg;
-
-	FString MQTTAddress;
-
-	const auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-	FConfigCacheIni::NormalizeConfigIniPath(Path);
-	GConfig->GetString(
-	                   TEXT("SmartCitySetting"),
-	                   TEXT("MQTTAddress"),
-	                   MQTTAddress,
-	                   Path
-	                  );
-
-	DTMqttClientPtr->Connect(
-	                         FString::Printf(TEXT("ws://%s/mqtt"), *MQTTAddress),
-	                         Cast<UPlanetGameInstance>(UGameplayStatics::GetGameInstance(this))->ThisPIxelAddres,
-	                         TEXT(""),
-	                         TEXT(""),
-	                         60,
-	                         5,
-	                         Success,
-	                         ErrorMsg
-	                        );
-
-	if (Success)
-
-	{
-	}
 }
 
 void UQueryDeviceInfoSubSystem::Connected(
@@ -1305,248 +1127,12 @@ void UQueryDeviceInfoSubSystem::MessageArrivedImp_Generic(
 	const FMQTTMSG_GetAll& MQTTMSG_GetAll
 	)
 {
-	auto Inst = USceneInteractionWorldSystem::GetInstance();
-
-	
-	if (MQTTMSG_GetAll.type == TEXT("ACCESSORY"))
-	{
-#if LOGQUERY
-
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ACCESSORY_Title"), Topic, Day, Hour);
-		}
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ACCESSORY"), Message, Day, Hour);
-		}
-
-#endif
-		auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-		for (const auto& Iter : MQTTMSG_GetAll.BimID_charArray)
-		{
-			TMap<int32, int32> NewExtensionParamMap{{Iter.Value.charId, Iter.Value.charValue}};
-#if LOGQUERY
-
-			{
-				int32 Day = -1;
-				int32 Hour = -1;
-				UKismetLogger::WriteLog(TEXT("ACCESSORY_Find"), Iter.Key, Day, Hour);
-			}
-
-#endif
-
-			{
-				auto SceneElementPtr = Inst->FindSceneActor(Iter.Key);
-				if (SceneElementPtr.IsValid())
-				{
-#if LOGQUERY
-
-					{
-						int32 Day = -1;
-						int32 Hour = -1;
-						UKismetLogger::WriteLog(TEXT("ACCESSORY_Find_Suc"), Iter.Key, Day, Hour);
-					}
-
-#endif
-
-					SceneElementPtr->UpdateExtensionParamIntMap(NewExtensionParamMap, true);
-					continue;
-				}
-			}
-			{
-				auto SceneElementPtr = Inst->GroupSceneElementMap.Find(Iter.Key);
-				if (SceneElementPtr)
-				{
-#if LOGQUERY
-
-					{
-						int32 Day = -1;
-						int32 Hour = -1;
-						UKismetLogger::WriteLog(TEXT("ACCESSORY_Find_Group_Suc"), Iter.Key, Day, Hour);
-					}
-
-#endif
-
-					for (auto SecondIter : *SceneElementPtr)
-					{
-						SecondIter->UpdateExtensionParamIntMap(NewExtensionParamMap, true);
-					}
-				}
-			}
-		}
-	}
-	else if (MQTTMSG_GetAll.type == TEXT("ALLDEVICEINFO"))
-	{
-#if LOGQUERY
-
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ALLDEVICEINFO_Title"), Topic, Day, Hour);
-		}
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ALLDEVICEINFO"), Message, Day, Hour);
-		}
-
-#endif
-		auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-		for (const auto& Iter : MQTTMSG_GetAll.BimID_devices)
-		{
-			TMap<int32, int32> NewExtensionParamMap;
-
-			for (const auto& SecondIter : Iter.Value.chars)
-			{
-				NewExtensionParamMap.Add(SecondIter.Value.charId, SecondIter.Value.charValue);
-			}
-
-			{
-				auto SceneElementPtr = Inst->FindSceneActor(Iter.Key);
-				if (SceneElementPtr.IsValid())
-				{
-					SceneElementPtr->UpdateExtensionParamIntMap(NewExtensionParamMap, true);
-					continue;
-				}
-			}
-			{
-				auto SceneElementPtr = Inst->GroupSceneElementMap.Find(Iter.Key);
-				if (SceneElementPtr)
-				{
-					for (auto SecondIter : *SceneElementPtr)
-					{
-						SecondIter->UpdateExtensionParamIntMap(NewExtensionParamMap, true);
-					}
-				}
-			}
-		}
-	}
 }
 
 void UQueryDeviceInfoSubSystem::MessageArrivedImp_Space(
 	const FMQTTMSG_GetAll& MQTTMSG_GetAll
 	)
 {
-	auto Inst = USceneInteractionWorldSystem::GetInstance();
-	
-	if (MQTTMSG_GetAll.type == TEXT("ACCESSORY"))
-	{
-#if LOGQUERY
-
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ACCESSORY_Title"), Topic, Day, Hour);
-		}
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ACCESSORY"), Message, Day, Hour);
-		}
-
-#endif
-		auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-		for (const auto& Iter : MQTTMSG_GetAll.charArray)
-		{
-#if LOGQUERY
-
-			{
-				int32 Day = -1;
-				int32 Hour = -1;
-				UKismetLogger::WriteLog(TEXT("ACCESSORY_Find"), Iter.Key, Day, Hour);
-			}
-
-#endif
-
-			if (Iter.charId == 818)
-			{
-			}
-			if (Iter.charId == 819)
-			{
-				if (auto SpaceDeviceIter = SpaceManaggerSubSystem->SpaceDeviceMap.Find(Iter.deviceId))
-				{
-					for (auto ScondIter : *SpaceDeviceIter)
-					{
-						if (ScondIter.Value == Iter.serialid)
-						{
-							if (auto SpaceActorIter = SpaceManaggerSubSystem->SpaceActorIDMap.Find(ScondIter.Key))
-							{
-								(*SpaceActorIter)->UpdateSpaceDeviceData(
-								                                         TEXT("空气质量"),
-								                                         MQTTMSG_GetAll.deviceId + Iter.serialid,
-								                                         Iter.charValue
-								                                        );
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-	else if (MQTTMSG_GetAll.type == TEXT("ALLDEVICEINFO"))
-	{
-#if LOGQUERY
-
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ALLDEVICEINFO_Title"), Topic, Day, Hour);
-		}
-		{
-			int32 Day = -1;
-			int32 Hour = -1;
-			UKismetLogger::WriteLog(TEXT("ALLDEVICEINFO"), Message, Day, Hour);
-		}
-
-#endif
-		auto SpaceManaggerSubSystem = USpaceManaggerSubSystem::GetInstance();
-
-		for (const auto& Iter : MQTTMSG_GetAll.devices)
-		{
-			TMap<int32, int32> NewExtensionParamMap;
-
-			int32 SpaceTotalValue = 0;
-
-			for (const auto& SecondIter : Iter.chars)
-			{
-				if (SecondIter.Value.charId == 818)
-				{
-				}
-				if (SecondIter.Value.charId == 819)
-				{
-					SpaceTotalValue += SecondIter.Value.charValue;
-				}
-
-				NewExtensionParamMap.Add(SecondIter.Value.charId, SecondIter.Value.charValue);
-			}
-
-			if (auto SpaceDeviceIter = SpaceManaggerSubSystem->SpaceDeviceMap.Find(MQTTMSG_GetAll.deviceId))
-			{
-				for (auto ScondIter : *SpaceDeviceIter)
-				{
-					if (ScondIter.Value == Iter.serialid)
-					{
-						if (auto SpaceActorIter = SpaceManaggerSubSystem->SpaceActorIDMap.Find(ScondIter.Key))
-						{
-							(*SpaceActorIter)->UpdateSpaceDeviceData(
-							                                         TEXT("空气质量"),
-							                                         MQTTMSG_GetAll.deviceId + Iter.serialid,
-							                                         SpaceTotalValue
-							                                        );
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
 }
 
 void UQueryDeviceInfoSubSystem::UpdateMQTT()

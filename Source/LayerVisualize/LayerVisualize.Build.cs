@@ -21,6 +21,10 @@ public class LayerVisualize : ModuleRules
         {
         }
 
+        PublicDefinitions.Add("TEST_RADAR = 0");  
+        PrivateDefinitions.Add("TEST_ELEVATOR = 1");  
+        PrivateDefinitions.Add("TEST_AIRQUALITY = 0");  
+        
         PublicIncludePaths.Add("LayerVisualize");
         PublicIncludePaths.Add("LayerVisualize/LayerVisualize");
         PublicIncludePaths.Add("LayerVisualize/Marks");
@@ -71,6 +75,12 @@ public class LayerVisualize : ModuleRules
             "GameplayCameras",
             "Niagara",
             "PixelStreaming",
+            "HTTP",
+            "WebSockets",
+            "Sockets",
+        });
+
+        PublicDependencyModuleNames.AddRange(new string[] {
             
             // 插件
             "Common_UMG",
@@ -80,15 +90,13 @@ public class LayerVisualize : ModuleRules
             "BuildingTools",
             "Effects",
             "SmartCitySuite",
-            "AssetRef",
+            "GameplayTaskHelper",
             
             // 其他模块
             "GameplayTags",
             "CommonType",
             "GameOptions",
-        });
-
-        PublicDependencyModuleNames.AddRange(new string[] {
+            "AssetRef",
         });
     }
 }

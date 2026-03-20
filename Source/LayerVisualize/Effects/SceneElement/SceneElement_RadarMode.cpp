@@ -5,25 +5,16 @@
 #include "Marks/PersonMark.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/BoxComponent.h"
-#include "IWebSocket.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "HttpModule.h"
-#include "WebSocketsModule.h"
 #include "Kismet/KismetMathLibrary.h"
 
 #include "AssetRefMap.h"
 #include "DatasmithAssetUserData.h"
 #include "FloorHelper.h"
 #include "LogWriter.h"
-#include "MessageBody.h"
 #include "SceneElement_RadarSweep.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionDecorator_Area.h"
-#include "SceneInteractionDecorator_Mode.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
-#include "WebChannelWorldSystem.h"
 
 struct RadarPoint
 {
@@ -526,14 +517,6 @@ void ASceneElement_RadarMode::EntryFocusDevice()
 		StaticMeshComponent->SetRenderCustomDepth(true);
 		StaticMeshComponent->SetCustomDepthStencilValue(UGameOptions::GetInstance()->FocusOutline);
 	}
-
-	auto MessageBodySPtr = MakeShared<FMessageBody_ViewDevice>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);
-
-	// Connect();
 }
 
 void ASceneElement_RadarMode::EntryViewDevice()
@@ -665,53 +648,6 @@ void ASceneElement_RadarMode::GenerationTemporature(
 	const TMap<FString, FVector>& Pts
 	)
 {
-	TArray<FVector> Vectors;
-
-	for (const auto& Iter : Pts)
-	{
-		Vectors.Add(Iter.Value);
-	}
-
-	auto TempPt = UKismetMathLibrary::GetVectorArrayAverage(Vectors);
-
-	TempPt.Z = BelongFloor->TemporatureNapTMCPtr->GetRelativeLocation().Z;
-
-	TemporaturePt = RelativeTransformComponent->GetComponentTransform().TransformPosition(TempPt);
-
-	// DrawDebugSphere(GetWorld(), TemporaturePt, 20, 20, FColor::Red, false, 5
-	// 	);
-
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FTemperatureMapMode_Decorator>(
-		                                                    USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                                     USmartCitySuiteTags::Interaction_Mode
-			                                                    )
-		                                                   );
-
-	if (AreaDecoratorSPtr)
-	{
-		if (Pts.IsEmpty())
-		{
-			AreaDecoratorSPtr->Remove(TemporatureID);
-
-			TemporatureID = FGuid();
-
-			return;
-		}
-
-		const auto Num = FMath::Clamp(Vectors.Num(), 0, 5);
-		TemporatureDistance = Num * 200;
-		TemporatureValue = Num * 200;
-
-		if (TemporatureID.IsValid())
-		{
-			AreaDecoratorSPtr->UpdatePoint(TemporatureID, TemporaturePt, TemporatureDistance, TemporatureValue);
-		}
-		else
-		{
-			TemporatureID = AreaDecoratorSPtr->AddPoint(TemporaturePt, TemporatureDistance, TemporatureValue);
-		}
-	}
 }
 
 void ASceneElement_RadarMode::GenerationMarks(
@@ -840,21 +776,6 @@ void ASceneElement_RadarMode::GenerationMarks(
 		}
 		else
 		{
-			auto NewMarkPtr = GetWorldImp()->SpawnActor<APersonMark>(
-			                                                         UAssetRefMap::GetInstance()->PersonMarkClass
-			                                                        );
-			NewMarkPtr->AttachToComponent(
-			                              RelativeTransformComponent,
-			                              // FAttachmentTransformRules::KeepRelativeTransform
-			                              FAttachmentTransformRules::KeepWorldTransform
-			                             );
-			NewMarkPtr->SetStartPt(Pt);
-
-			NewMarkPtr->Marks = Marks;
-
-			Marks->Add(NewMarkPtr);
-
-			GeneratedMarkers.Add(PtIter.Key, NewMarkPtr);
 		}
 	}
 
@@ -882,51 +803,10 @@ void ASceneElement_RadarMode::ClearMarks()
 	}
 	GeneratedMarkers.Empty();
 
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FTemperatureMapMode_Decorator>(
-		                                                    USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                                     USmartCitySuiteTags::Interaction_Mode
-			                                                    )
-		                                                   );
-
-	if (AreaDecoratorSPtr)
-	{
-		AreaDecoratorSPtr->Remove(TemporatureID);
-
-		TemporatureID = FGuid();
-	}
 }
 
 void ASceneElement_RadarMode::InitialSocket()
 {
-	// FApp::SetBenchmarking(true);
-	if (!FModuleManager::Get().IsModuleLoaded("WebSockets"))
-	{
-		FModuleManager::LoadModuleChecked<FWebSocketsModule>("WebSockets");
-	}
-
-	// 如果已存在连接先关掉
-	if (Socket.IsValid())
-	{
-		Socket->Close();
-		Socket.Reset();
-	}
-
-	// 可传协议：CreateWebSocket(Url, TEXT("")); // 或 "ws"/"wss" 的子协议
-	FString QueryRadarWSAddress;
-
-	auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-	Path = FConfigCacheIni::NormalizeConfigIniPath(Path);
-	GConfig->GetString(
-	                   TEXT("SmartCitySetting"),
-	                   TEXT("QueryRadarWSAddress"),
-	                   QueryRadarWSAddress,
-	                   Path
-	                  );
-	FString Url = TEXT("ws://") + QueryRadarWSAddress;
-	Socket = FWebSocketsModule::Get().CreateWebSocket(Url);
-
-	BindEvents();
 }
 
 void ASceneElement_RadarMode::Connect()
@@ -939,32 +819,12 @@ void ASceneElement_RadarMode::Connect()
 		InitialSocket();
 	}
 
-	if (Socket.IsValid())
-	{
-		if (Socket->IsConnected())
-		{
-		}
-		else
-		{
-			Socket->Connect();
-		}
-
-		Socket->Send(FString::Printf(TEXT("0406,%s"), *DeviceRealID));
-	}
 }
 
 void ASceneElement_RadarMode::SendText(
 	const FString& Message
 	)
 {
-	if (Socket.IsValid() && Socket->IsConnected())
-	{
-		Socket->Send(Message);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[WS] Not connected, send ignored"));
-	}
 }
 
 void ASceneElement_RadarMode::Close(
@@ -972,11 +832,6 @@ void ASceneElement_RadarMode::Close(
 	const FString& Reason
 	)
 {
-	if (Socket.IsValid())
-	{
-		Socket->Close(Code, Reason);
-		Socket.Reset();
-	}
 }
 
 void ASceneElement_RadarMode::BindEvents()
@@ -986,112 +841,6 @@ void ASceneElement_RadarMode::BindEvents()
 		return;
 	}
 
-	Socket->OnConnected().AddLambda(
-	                                [this]()
-	                                {
-		                                ReconnectTry = 0;
-		                                UE_LOG(LogTemp, Log, TEXT("[WS] Connected"));
-		                                // 连接后可发送鉴权/订阅等
-		                                // SendText(TEXT("{\"type\":\"hello\"}"));
-		                                SetNetState(ENetState::kOffLine);
-	                                }
-	                               );
-
-	Socket->OnConnectionError().AddLambda(
-	                                      [this](
-	                                      const FString& Error
-	                                      )
-	                                      {
-		                                      if (HasActorBegunPlay())
-		                                      {
-			                                      UE_LOG(LogTemp, Error, TEXT("[WS] ConnectionError: %s"), *Error);
-			                                      // ScheduleReconnect();
-			                                      SetNetState(ENetState::kOffLine);
-		                                      }
-	                                      }
-	                                     );
-
-	Socket->OnClosed().AddLambda(
-	                             [this](
-	                             int32 StatusCode,
-	                             const FString& Reason,
-	                             bool bWasClean
-	                             )
-	                             {
-		                             SetNetState(ENetState::kOffLine);
-		                             UE_LOG(
-		                                    LogTemp,
-		                                    Warning,
-		                                    TEXT("[WS] Closed code=%d clean=%d reason=%s"),
-		                                    StatusCode,
-		                                    bWasClean,
-		                                    *Reason
-		                                   );
-		                             // 非正常关闭就重连（按你业务调整）
-		                             if (!bWasClean)
-		                             {
-			                             // ScheduleReconnect();
-		                             }
-	                             }
-	                            );
-
-	Socket->OnMessage().AddLambda(
-	                              [this](
-	                              const FString& Message
-	                              )
-	                              {
-		                              SetNetState(ENetState::kOnLine);
-
-		                              RadarFrameResult R = ParseRadarDataFromHex(TCHAR_TO_UTF8(*Message));
-
-		                              // 这里解析 JSON：FJsonSerializer / UE::Json 等
-
-		                              TMap<FString, FVector> Pts;
-		                              for (const auto& Iter : R.targets)
-		                              {
-			                              FVector Pt(-Iter.posX, Iter.posY, 0.f);
-			                              Pts.Add(UKismetStringLibrary::Conv_IntToString(Iter.tid), Pt * 100);
-
-			                              PRINTINVOKEWITHSTR(FString::Printf(TEXT("%d %s"),Iter.tid, *Pt.ToString()));
-		                              }
-#if TEST_RADARLOG
-									  int32 Day = -1;
-									  int32 Hour = 1;
-									  UKismetLogger::WriteLog(
-										  FString::Printf(TEXT("%s %s %s"),  *BelongFloor->FloorTag.ToString(), *SceneElementID, *DeviceRealID), 
-										  Message, Day, Hour);
-#endif
-
-		                              UpdatePositions(Pts);
-	                              }
-	                             );
-
-	Socket->OnMessageSent().AddLambda(
-	                                  [](
-	                                  const FString& Message
-	                                  )
-	                                  {
-		                                  UE_LOG(LogTemp, Log, TEXT("[WS] Sent: %s"), *Message);
-	                                  }
-	                                 );
-
-	// 二进制消息（如果服务器推的是 bytes）
-	// Socket->OnRawMessage().AddLambda(
-	//                                  [](
-	//                                  const void* Data,
-	//                                  SIZE_T Size,
-	//                                  SIZE_T BytesRemaining
-	//                                  )
-	//                                  {
-	// 	                                 UE_LOG(
-	// 	                                        LogTemp,
-	// 	                                        Log,
-	// 	                                        TEXT("[WS] RawMessage size=%d remaining=%d"),
-	// 	                                        (int32)Size,
-	// 	                                        (int32)BytesRemaining
-	// 	                                       );
-	//                                  }
-	//                                 );
 }
 
 void ASceneElement_RadarMode::QueryDeviceInfoComplete(
@@ -1331,26 +1080,4 @@ void ASceneElement_RadarMode::UpdatePositions(
 		}
 	}
 
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-	if (AreaDecoratorSPtr)
-	{
-	}
-	GetWorldTimerManager().SetTimer(
-	                                ClearTimerHandle,
-	                                FTimerDelegate::CreateLambda(
-	                                                             [this]()
-	                                                             {
-		                                                             SetNetState(ENetState::kOffLine);
-
-		                                                             ClearMarks();
-	                                                             }
-	                                                            ),
-	                                2.f,
-	                                false
-	                               );
 }

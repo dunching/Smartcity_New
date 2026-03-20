@@ -16,6 +16,7 @@
 class FDecoratorBase;
 class ASceneElement_Space;
 class ASceneElement_DeviceBase;
+class ASceneElement_PWR_Pipe;
 class AFloorHelper;
 class AViewerPawnBase;
 

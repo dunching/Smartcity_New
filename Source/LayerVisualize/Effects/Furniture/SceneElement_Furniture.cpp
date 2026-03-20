@@ -8,15 +8,9 @@
 #include "CollisionDataStruct.h"
 #include "DatasmithAssetUserData.h"
 #include "FeatureWheel.h"
-#include "GameplayTagsLibrary.h"
 #include "MainHUD.h"
-#include "MainHUDLayout.h"
-#include "MessageBody.h"
-#include "RouteMarker.h"
 #include "SceneElement_DeviceBase.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
 
 ASceneElement_Furniture::ASceneElement_Furniture(
 	const FObjectInitializer& ObjectInitializer
@@ -113,37 +107,6 @@ void ASceneElement_Furniture::SwitchInteractionType(
 		if ((ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
 			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)))
 		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-				                                             USceneInteractionWorldSystem::GetInstance()->
-				                                             GetDecorator(
-				                                                          USmartCitySuiteTags::Interaction_Interaction
-				                                                         )
-				                                            );
-			if (DecoratorSPtr)
-			{
-				const auto ViewConfig = DecoratorSPtr->GetViewConfig();
-				if (ViewConfig.FurnitureTranlucent <= 0)
-				{
-					SwitchState(EState::kHiden);
-				}
-				else if (ViewConfig.FurnitureTranlucent >= 100)
-				{
-					SwitchState(EState::kOriginal);
-				}
-				else
-				{
-					SetTranslucentImp(
-					                  {StaticMeshComponent},
-					                  ViewConfig.FurnitureTranlucent,
-					                  UAssetRefMap::GetInstance()->WallTranslucentMatInst
-					                 );
-				}
-
-				return;
-			}
-
 			SwitchState(EState::kOriginal);
 
 			return;

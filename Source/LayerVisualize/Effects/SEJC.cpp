@@ -4,7 +4,6 @@
 #include "DatasmithAssetUserData.h"
 
 #include "AssetRefMap.h"
-#include "GameplayTagsLibrary.h"
 #include "SceneElementTools.h"
 #include "SmartCitySuiteTags.h"
 

@@ -6,16 +6,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/StaticMeshActor.h"
-#include "Tasks/AITask.h"
-#include "Engine/Light.h"
 
 #include "GameOptions.h"
 #include "SceneInteractionWorldSystem.h"
 #include "Algorithm.h"
-#include "AssetRefMap.h"
-#include "TourPawn.h"
-#include "Tools.h"
-#include "GameplayTagsLibrary.h"
 #include "AssetRefMap.h"
 #include "Building_CurtainWall.h"
 #include "TowerHelperBase.h"
@@ -43,8 +37,6 @@ struct FPrefix : public TStructVariable<FPrefix>
 {
 	FName Datasmith_UniqueId = TEXT("Datasmith_UniqueId");
 };
-
-FName UPlayerControllerGameplayTasksComponent::ComponentName = TEXT("PlayerControllerGameplayTasksComponent");
 
 void UGT_ReplyCameraTransform::Activate()
 {
@@ -106,35 +98,6 @@ void UGT_CameraTransformByPawnViewer::OnDestroy(
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-void UPlayerControllerGameplayTasksComponent::OnGameplayTaskDeactivated(
-	UGameplayTask& Task
-	)
-{
-	Super::OnGameplayTaskDeactivated(Task);
-
-	auto GTPtr = Cast<UGameplayTaskBase>(&Task);
-	if (GTPtr )
-	{
-		for (auto & Iter : GTPtr->NextTaskAry)
-		{
-			if (Iter)
-			{
-				Iter->ReadyForActivation();
-				Iter = nullptr;
-			}
-		}
-	}
-}
-
-void UGameplayTaskBase::OnDestroy(
-	bool bInOwnerFinished
-	)
-{
-	OnTaskComplete.Broadcast(true);
-
-	Super::OnDestroy(bInOwnerFinished);
-}
-
 UGT_CameraTransform::UGT_CameraTransform(
 	const FObjectInitializer& ObjectInitializer
 	) :
@@ -147,17 +110,6 @@ UGT_CameraTransform::UGT_CameraTransform(
 void UGT_CameraTransform::Activate()
 {
 	Super::Activate();
-
-	auto PCPtr = GEngine->GetFirstLocalPlayerController(GetWorld());
-	auto PawnPtr = Cast<ATourPawn>(GEngine->GetFirstLocalPlayerController(GetWorld())->GetPawn());
-	if (PawnPtr)
-	{
-		OriginalLocation = PawnPtr->GetActorLocation();
-		OriginalRotation = PCPtr->GetControlRotation();
-		OriginalSpringArmLen = PawnPtr->SpringArmComponent->TargetArmLength;
-
-		return;
-	}
 
 	EndTask();
 }
@@ -186,38 +138,6 @@ void UGT_CameraTransform::Adjust(
 	float Percent
 	) const
 {
-	auto PawnPtr = Cast<ATourPawn>(GEngine->GetFirstLocalPlayerController(GetWorld())->GetPawn());
-	if (!PawnPtr)
-	{
-		return;
-	}
-
-	const auto CurrentLocation = UKismetMathLibrary::VLerp(
-	                                                       OriginalLocation,
-	                                                       TargetLocation,
-	                                                       Percent
-	                                                      );
-
-	const auto CurrentRotation = UKismetMathLibrary::RLerp(
-	                                                       OriginalRotation,
-	                                                       TargetRotation,
-	                                                       Percent,
-	                                                       true
-	                                                      );
-
-	const auto CurrentTargetArmLength = FMath::Lerp(
-	                                                OriginalSpringArmLen,
-	                                                TargetTargetArmLength,
-	                                                Percent
-	                                               );
-
-	PawnPtr->LerpToSeat(
-	                    FTransform(
-	                               CurrentRotation,
-	                               CurrentLocation
-	                              ),
-	                    CurrentTargetArmLength
-	                   );
 }
 
 void UGT_ModifyCameraTransform::Activate()
@@ -280,134 +200,6 @@ void UGT_CameraTransformLocaterBySpace::Activate()
 		TargetRotation = Result.Key.GetRotation().Rotator();
 		TargetTargetArmLength = UGameOptions::GetInstance()->ViewSpaceArmLen;
 	}
-}
-
-UGT_BatchBase::UGT_BatchBase(
-	const FObjectInitializer& ObjectInitializer
-	) :
-	  Super(ObjectInitializer)
-{
-	bTickingTask = true;
-}
-
-void UGT_BatchBase::TickTask(
-	float DeltaTime
-	)
-{
-	Super::TickTask(DeltaTime);
-
-	switch (UseScopeType)
-	{
-	case EUseScopeType::kTime:
-		{
-			double TotalTime = 0.;
-			for (;;)
-			{
-				double InScopeSeconds = 0.;
-				{
-					FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-					if (ProcessTask(DeltaTime))
-					{
-					}
-					else
-					{
-						break;
-					}
-				}
-				TotalTime += InScopeSeconds;
-
-				// PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-				// PRINTINVOKEWITHSTR(FString::Printf(TEXT("TotalTime %.2lf"), TotalTime));
-
-				if (TotalTime > ScopeTime)
-				{
-					return;
-				}
-
-				if (UseScopeType != EUseScopeType::kTime)
-				{
-					return;
-				}
-			}
-		}
-		break;
-	case EUseScopeType::kCount:
-		{
-			// double TotalTime = 0.;
-			//
-			//
-			// ON_SCOPE_EXIT
-			// {
-			// 	if (TotalTime > 0.3)
-			// 	{
-			// 		// checkNoEntry();
-			// 	}
-			// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("TotalTime %.2lf"), TotalTime));
-			// };
-
-			int32 CurrentTickProcessNum = 0;
-			for (;;)
-			{
-				// double InScopeSeconds = 0.;
-				// ON_SCOPE_EXIT
-				// {
-				// 	if (InScopeSeconds > 0.3)
-				// 	{
-				// 		// checkNoEntry();
-				// 	}
-				// 	TotalTime += InScopeSeconds;
-				// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-				// };
-				//
-				// FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-				if (ProcessTask(DeltaTime))
-				{
-					CurrentTickProcessNum++;
-					if (CurrentTickProcessNum < PerTickProcessNum)
-					{
-					}
-					else
-					{
-						CurrentTickProcessNum = 0;
-						return;
-					}
-
-					if (UseScopeType != EUseScopeType::kCount)
-					{
-						return;
-					}
-				}
-				else
-				{
-					break;
-				}
-			}
-		}
-		break;
-	case EUseScopeType::kNone:
-		{
-			if (ProcessTask(DeltaTime))
-			{
-				return;
-			}
-			else
-			{
-				break;
-			}
-		}
-		break;
-	}
-
-	EndTask();
-}
-
-bool UGT_BatchBase::ProcessTask(
-	float DeltaTime
-	)
-{
-	return false;
 }
 
 UGT_InitializeSceneActors::UGT_InitializeSceneActors(

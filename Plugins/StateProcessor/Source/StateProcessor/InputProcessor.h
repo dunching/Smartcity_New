@@ -29,7 +29,7 @@ public:
 
 	using FOnQuitFunc = std::function<void()>;
 
-	FInputProcessor(FOwnerPawnType* CharacterPtr);
+	FInputProcessor();
 
 	virtual ~FInputProcessor();
 
@@ -40,9 +40,6 @@ public:
 	FInputProcessor& operator=(const FInputProcessor&) = delete;
 
 	FInputProcessor& operator=(FInputProcessor&&) = delete;
-
-	template<typename Type = FOwnerPawnType>
-	Type* GetOwnerActor() { return Cast<Type>(OnwerPawnPtr); }
 
 	// 
 	virtual void EnterAction();
@@ -87,8 +84,6 @@ protected:
 	void SwitchShowCursor(bool bIsShowCursor);
 
 	void SwitchRender(bool bIsOpen);
-
-	FOwnerPawnType* OnwerPawnPtr = nullptr;
 
 
 private:

@@ -8,9 +8,7 @@
 #include "KismetTools.h"
 
 FInputProcessor::FInputProcessor(
-	FOwnerPawnType* CharacterPtr
-	) :
-	  OnwerPawnPtr(CharacterPtr)
+	) 
 {
 }
 
@@ -161,7 +159,6 @@ void FInputProcessor::SetPawn(
 	FOwnerPawnType* NewPawnPtr
 	)
 {
-	OnwerPawnPtr = NewPawnPtr;
 }
 
 void FInputProcessor::UnRegisterTicker()

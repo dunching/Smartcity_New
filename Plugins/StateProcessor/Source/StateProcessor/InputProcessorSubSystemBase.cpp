@@ -22,7 +22,7 @@ void UInputProcessorSubSystemBase::Initialize(
 
 	if (Collection.IsInitialized())
 	{
-		CurrentProcessorSPtr = MakeShared<FInputProcessor>(nullptr);
+		CurrentProcessorSPtr = MakeShared<FInputProcessor>();
 
 		GetWorld()->GetTimerManager().ClearTimer(TickHandle);
 		

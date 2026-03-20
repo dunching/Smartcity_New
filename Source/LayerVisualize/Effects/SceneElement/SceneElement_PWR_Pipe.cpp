@@ -9,12 +9,10 @@
 #include "CollisionDataStruct.h"
 #include "DatasmithAssetUserData.h"
 #include "FeatureWheel.h"
-#include "GameplayTagsLibrary.h"
 #include "MainHUD.h"
 #include "MainHUDLayout.h"
 #include "SceneElementTools.h"
 #include "SceneElement_DeviceBase.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "Algorithm.h"
 
@@ -290,7 +288,6 @@ void ASceneElement_PWR_Pipe::InitialSceneElement()
 {
 	Super::InitialSceneElement();
 	
-	USceneInteractionWorldSystem::GetInstance()->SetSceneActor(DeviceTypeStr, this);
 }
 
 void ASceneElement_PWR_Pipe::EntryFocusDevice()

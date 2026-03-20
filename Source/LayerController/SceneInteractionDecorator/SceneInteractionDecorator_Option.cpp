@@ -1,38 +1,13 @@
 #include "SceneInteractionDecorator_Option.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "Net/WebChannelWorldSystem.h"
-#include "Components/BoxComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-
 #include "AssetRefMap.h"
-#include "CollisionDataStruct.h"
 #include "GameOptions.h"
-#include "LogWriter.h"
 #include "MessageBody.h"
 #include "SceneInteractionWorldSystem.h"
-#include "Algorithm.h"
-#include "DatasmithSceneActor.h"
 #include "Dynamic_WeatherBase.h"
-#include "FloorHelper.h"
-#include "PlanetPlayerController.h"
-#include "PlayerGameplayTasks.h"
-#include "SceneElement_PWR_Pipe.h"
 #include "TemplateHelper.h"
-#include "FloorHelperBase.h"
-#include "IPSSI.h"
-#include "NavagationPaths.h"
-#include "PersonMark.h"
-#include "SceneElement_Space.h"
 #include "SmartCitySuiteTags.h"
-#include "ViewSingleFloorProcessor.h"
 #include "WeatherSystem.h"
-#include "TourPawn.h"
-#include "ViewTowerProcessor.h"
-#include "ViewSingleDeviceProcessor.h"
-#include "ViewSingleFloorViewEnergyProcessor.h"
-#include "ViewSplitFloorProcessor.h"
-#include "SceneElementManagger_AccessControl.h"
 #include "SceneInteractionDecorator_Area.h"
 
 void FInteraction_Decorator::SwitchIteractionType(
@@ -104,9 +79,6 @@ void FInteraction_Decorator::UpdateViewConfig(
 			FMessageBody_ViewConfigChanged>();
 
 		MessageSPtr->ViewConfig = InConfig;
-
-		UWebChannelWorldSystem::GetInstance()->
-			SendMessage(MessageSPtr);
 	}
 	else
 	{

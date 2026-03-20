@@ -4,14 +4,9 @@
 
 #include "AssetRefMap.h"
 #include "CollisionDataStruct.h"
-#include "DatasmithSceneActor.h"
 #include "Dynamic_SkyBase.h"
 #include "FloorHelper.h"
-#include "SceneElementCategory.h"
 #include "SceneElement_RollerBlind.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionDecorator_Area.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
 #include "WeatherSystem.h"
@@ -146,7 +141,6 @@ void ABuilding_CurtainWall::Merge(
 			{
 				if (Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_AS))
 				{
-					AttachToActor(Iter.Value, FAttachmentTransformRules::KeepWorldTransform);
 					return;
 				}
 			}
@@ -188,41 +182,6 @@ void ABuilding_CurtainWall::SwitchInteractionType(
 		if ((ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
 			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)))
 		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-				                                             USceneInteractionWorldSystem::GetInstance()->
-				                                             GetDecorator(
-				                                                          USmartCitySuiteTags::Interaction_Interaction
-				                                                         )
-				                                            );
-			if (DecoratorSPtr)
-			{
-				const auto ViewConfig = DecoratorSPtr->GetViewConfig();
-				if (ViewConfig.CurtainWallTranlucent <= 0)
-				{
-					SwitchState(EState::kHiden);
-				}
-				else if (ViewConfig.CurtainWallTranlucent >= 100)
-				{
-					SwitchState(EState::kOriginal);
-				}
-				else
-				{
-			SetActorHiddenInGame(false);
-
-					TArray<UStaticMeshComponent*> Components;
-					GetComponents<UStaticMeshComponent>(Components);
-
-					SetTranslucentImp(
-					                  Components,
-					                  ViewConfig.CurtainWallTranlucent,
-					                  UAssetRefMap::GetInstance()->CurtainWallTranslucentMatInst.LoadSynchronous()
-					                 );
-				}
-
-				return;
-			}
 
 			SwitchState(EState::kOriginal);
 
@@ -246,31 +205,6 @@ void ABuilding_CurtainWall::OnHourChanged(
 	int32 Hour
 	)
 {
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-
-	if (!AreaDecoratorSPtr)
-	{
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-		}
-		return;
-	}
-
-	if (!AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_ExternalWall))
-	{
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-		}
-		return;
-	}
-
 	if (Hour > 18 || Hour < 8)
 	{
 		for (auto Iter : RectLightComponentAry)
@@ -399,8 +333,6 @@ void ABuilding_CurtainWall::GenerateRollerBlind(AActor* ActorPtr)
 			SceneElement_RollerBlindPtr->SceneElementID = UserData[TEXT("Datasmith_UniqueId")] + TEXT("窗帘");
 			SceneElement_RollerBlindPtr->DeviceTypeStr = TEXT("窗帘");
 			SceneElement_RollerBlindPtr->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
-
-			USceneInteractionWorldSystem::GetInstance()->SetSceneActor(SceneElement_RollerBlindPtr->SceneElementID, SceneElement_RollerBlindPtr);
 
 			const auto Size = Box.GetSize();
 			if (Dot > 0)

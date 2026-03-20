@@ -70,16 +70,12 @@ void UInputProcessorSubSystem_Imp::SwitchToProcessor(
 
 	if constexpr (std::is_base_of_v<HumanProcessor::FHumanProcessor, ProcessorType>)
 	{
-		auto PawnPtr = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-		auto CharacterPtr = Cast<typename ProcessorType::FOwnerPawnType>(PawnPtr);
-		ActionProcessSPtr = MakeShared<ProcessorType>(CharacterPtr);
+		ActionProcessSPtr = MakeShared<ProcessorType>();
 		ActionProcessSPtr->SetOnQuitFunc(OnQuitFunc);
 	}
 	else
 	{
-		auto PawnPtr = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-		auto CharacterPtr = Cast<typename ProcessorType::FOwnerPawnType>(PawnPtr);
-		ActionProcessSPtr = MakeShared<ProcessorType>(CharacterPtr);
+		ActionProcessSPtr = MakeShared<ProcessorType>();
 		ActionProcessSPtr->SetOnQuitFunc(OnQuitFunc);
 	}
 

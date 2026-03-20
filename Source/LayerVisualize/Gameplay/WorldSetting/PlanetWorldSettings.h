@@ -22,9 +22,8 @@ class UPAD_ItemProxyCollection;
  *
  */
 UCLASS()
-class SMARTCITY_API APlanetWorldSettings :
-	public AWorldSettings,
-	public IGetInputProcessorSubSystemInterface
+class LAYERVISUALIZE_API APlanetWorldSettings :
+	public AWorldSettings
 {
 	GENERATED_BODY()
 
@@ -38,8 +37,6 @@ public:
 
 	UDataTableCollection* GetSceneProxyExtendInfoMap()const;
 
-	virtual UInputProcessorSubSystemBase* GetInputProcessorSubSystem()const override;
-	
 protected:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)

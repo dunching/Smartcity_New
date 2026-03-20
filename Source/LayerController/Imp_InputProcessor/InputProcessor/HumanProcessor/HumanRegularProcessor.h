@@ -30,10 +30,6 @@ namespace HumanProcessor
 		using FOnAllocationChangedHandle =
 		TCallbackHandleContainer<void()>::FCallbackHandleSPtr;
 
-		FHumanRegularProcessor(
-			FOwnerPawnType* CharacterPtr
-			);
-
 		virtual ~FHumanRegularProcessor();
 
 		virtual void EnterAction() override;

@@ -6,11 +6,12 @@
 #include "Components/BoxComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Kismet/KismetStringLibrary.h"
+#include "GenericPlatform/GenericPlatformHttp.h"
+#include "Interfaces/IHttpResponse.h"
 
 #include "AssetRefMap.h"
 #include "CollisionDataStruct.h"
 #include "DatasmithAssetUserData.h"
-#include "DTMqttClient.h"
 #include "Dynamic_SkyBase.h"
 #include "FeatureWheel.h"
 #include "FloorHelper.h"
@@ -18,16 +19,11 @@
 #include "MainHUDLayout.h"
 #include "SceneElement_DeviceBase.h"
 #include "Space_VolumetricFog.h"
-#include "SceneInteractionDecorator_Area.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "WeatherSystem.h"
 #include "Algorithm.h"
 #include "HttpModule.h"
 #include "LogWriter.h"
-#include "WebChannelWorldSystem.h"
-#include "GenericPlatform/GenericPlatformHttp.h"
-#include "Interfaces/IHttpResponse.h"
 
 ASceneElement_Space::ASceneElement_Space(
 	const FObjectInitializer& ObjectInitializer
@@ -544,83 +540,6 @@ void ASceneElement_Space::EntryFocusDevice(
 	const FSceneElementConditional& ConditionalSet
 	)
 {
-	// 确认当前的模式
-	auto DecoratorSPtr =
-		DynamicCastSharedPtr<FInteraction_Decorator>(
-		                                             USceneInteractionWorldSystem::GetInstance()->
-		                                             GetDecorator(
-		                                                          USmartCitySuiteTags::Interaction_Interaction
-		                                                         )
-		                                            );
-	if (DecoratorSPtr)
-	{
-		switch (DecoratorSPtr->GetInteractionType())
-		{
-		case EInteractionType::kDevice:
-			{
-				SetActorHiddenInGame(true);
-
-				for (auto Iter : FeatureWheelAry)
-				{
-					if (Iter)
-					{
-						Iter->RemoveFromParent();
-					}
-				}
-				FeatureWheelAry.Empty();
-			}
-			break;
-		case EInteractionType::kSpace:
-			{
-				SetActorHiddenInGame(true);
-
-				SwitchColor(FColor::Red);
-
-				auto FeatureWheelPtr = CreateWidget<UFeatureWheel>(
-				                                                   GetWorld(),
-				                                                   UAssetRefMap::GetInstance()->FeatureWheelClass
-				                                                  );
-				if (FeatureWheelPtr)
-				{
-					auto TargetPt = UKismetAlgorithm::GetActorBox(
-					                                              {this}
-					                                             );
-
-					TArray<FFeaturesItem> Features;
-					for (const auto& Iter : FeaturesAry)
-					{
-						Features.Add({Iter, nullptr});
-					}
-
-					FeatureWheelPtr->TargetPt = TargetPt.GetCenter() + FVector(0, 0, TargetPt.GetExtent().Z);
-					FeatureWheelPtr->InitalFeaturesItem(Category, Features);
-
-					FeatureWheelPtr->AddToViewport();
-
-					FeatureWheelAry.Add(FeatureWheelPtr);
-				}
-
-				for (auto PrimitiveComponentPtr : StaticMeshComponentsAry)
-				{
-					if (PrimitiveComponentPtr)
-					{
-						PrimitiveComponentPtr->SetHiddenInGame(false);
-						// PrimitiveComponentPtr->SetRenderInMainPass(true);
-						PrimitiveComponentPtr->SetRenderCustomDepth(true);
-						PrimitiveComponentPtr->SetCustomDepthStencilValue(UGameOptions::GetInstance()->FocusOutline);
-					}
-				}
-
-				for (auto Iter : CollisionComponentsAry)
-				{
-					Iter->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				}
-
-				ShowFog();
-			}
-			break;
-		}
-	}
 }
 
 void ASceneElement_Space::EntryShow(
@@ -651,150 +570,6 @@ void ASceneElement_Space::EntryShowEffect(
 	const FSceneElementConditional& ConditionalSet
 	)
 {
-	// 确认当前的模式
-	auto DecoratorSPtr =
-		DynamicCastSharedPtr<FInteraction_Decorator>(
-		                                             USceneInteractionWorldSystem::GetInstance()->
-		                                             GetDecorator(
-		                                                          USmartCitySuiteTags::Interaction_Interaction
-		                                                         )
-		                                            );
-	if (DecoratorSPtr)
-	{
-		switch (DecoratorSPtr->GetInteractionType())
-		{
-		case EInteractionType::kDevice:
-			{
-				SetActorHiddenInGame(true);
-
-				for (auto Iter : FeatureWheelAry)
-				{
-					if (Iter)
-					{
-						Iter->RemoveFromParent();
-					}
-				}
-				FeatureWheelAry.Empty();
-
-				ClearFog();
-			}
-			break;
-		case EInteractionType::kSpace:
-			{
-				SetActorHiddenInGame(false);
-
-				SwitchColor(FColor::White);
-
-				{
-					// double InScopeSeconds = 0.;
-					// ON_SCOPE_EXIT
-					// {
-					// 	if (InScopeSeconds > 0.3)
-					// 	{
-					// 		checkNoEntry();
-					//
-					// 	}
-					// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-					// };
-					//
-					// FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-
-					auto FeatureWheelPtr = CreateWidget<UFeatureWheel>(
-					                                                   GetWorld(),
-					                                                   UAssetRefMap::GetInstance()->FeatureWheelClass
-					                                                  );
-					if (FeatureWheelPtr)
-					{
-						auto TargetPt = UKismetAlgorithm::GetActorBox(
-						                                              {this}
-						                                             );
-
-						TArray<FFeaturesItem> Features;
-						for (const auto& Iter : FeaturesAry)
-						{
-							Features.Add({Iter, nullptr});
-						}
-
-						FeatureWheelPtr->TargetPt = TargetPt.GetCenter() + FVector(0, 0, TargetPt.GetExtent().Z);
-						FeatureWheelPtr->InitalFeaturesItem(Category, Features);
-
-						FOnButtonClickedEvent OnClickedDelegate;
-
-						OnClickedDelegate.AddDynamic(this, &ThisClass::OnClickedTag);
-
-						FeatureWheelPtr->SetOncliced(OnClickedDelegate);
-
-						FeatureWheelPtr->AddToViewport();
-
-						FeatureWheelAry.Add(FeatureWheelPtr);
-					}
-				}
-				{
-					// double InScopeSeconds = 0.;
-					// ON_SCOPE_EXIT
-					// {
-					// 	if (InScopeSeconds > 0.3)
-					// 	{
-					// 		checkNoEntry();
-					//
-					// 	}
-					// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-					// };
-					//
-					// FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-					for (auto PrimitiveComponentPtr : StaticMeshComponentsAry)
-					{
-						if (PrimitiveComponentPtr)
-						{
-							PrimitiveComponentPtr->SetHiddenInGame(false);
-							PrimitiveComponentPtr->SetRenderInMainPass(false);
-							PrimitiveComponentPtr->SetRenderCustomDepth(false);
-						}
-					}
-				}
-
-				{
-					// double InScopeSeconds = 0.;
-					// ON_SCOPE_EXIT
-					// {
-					// 	if (InScopeSeconds > 0.3)
-					// 	{
-					// 		checkNoEntry();
-					//
-					// 	}
-					// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-					// };
-					//
-					// FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-					for (auto Iter : CollisionComponentsAry)
-					{
-						Iter->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-					}
-				}
-
-				{
-					// double InScopeSeconds = 0.;
-					// ON_SCOPE_EXIT
-					// {
-					// 	if (InScopeSeconds > 0.3)
-					// 	{
-					// 		checkNoEntry();
-					//
-					// 	}
-					// 	PRINTINVOKEWITHSTR(FString::Printf(TEXT("InScopeSeconds %.2lf"), InScopeSeconds));
-					// };
-					//
-					// FSimpleScopeSecondsCounter SimpleScopeSecondsCounter(InScopeSeconds);
-
-					ClearFog();
-				}
-			}
-			break;
-		}
-	}
 }
 
 void ASceneElement_Space::QuitAllState()
@@ -802,8 +577,6 @@ void ASceneElement_Space::QuitAllState()
 	Super::QuitAllState();
 
 	SetActorHiddenInGame(false);
-
-	USceneInteractionWorldSystem::GetInstance()->ClearFocus();
 
 	for (auto Iter : FeatureWheelAry)
 	{
@@ -839,70 +612,12 @@ void ASceneElement_Space::SwitchColor(
 
 void ASceneElement_Space::OnClickedTag()
 {
-	USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
-	                                                                   USmartCitySuiteTags::Interaction_Area_Space,
-	                                                                   [this](
-	                                                                   const TSharedPtr<FDecoratorBase>&
-	                                                                   AreaDecoratorSPtr
-	                                                                   )
-	                                                                   {
-		                                                                   auto SpaceAreaDecoratorSPtr =
-			                                                                   DynamicCastSharedPtr<
-				                                                                   FViewSpace_Decorator>(
-				                                                                    AreaDecoratorSPtr
-				                                                                   );
-		                                                                   if (SpaceAreaDecoratorSPtr)
-		                                                                   {
-			                                                                   SpaceAreaDecoratorSPtr->Floor =
-				                                                                   BelongFloor->FloorTag;
-			                                                                   SpaceAreaDecoratorSPtr->SceneElementPtr =
-				                                                                   this;
-		                                                                   }
-	                                                                   }
-	                                                                  );
 }
 
 void ASceneElement_Space::OnHourChanged(
 	int32 Hour
 	)
 {
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-
-	if (!AreaDecoratorSPtr)
-	{
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-		}
-		return;
-	}
-
-	if (
-		AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_ExternalWall) ||
-		AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_Periphery)
-	)
-	{
-		if (Hour > 18 || Hour < 8)
-		{
-			for (auto Iter : RectLightComponentAry)
-			{
-				Iter->SetHiddenInGame(false);
-			}
-			return;
-		}
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-			DrawDebugSphere(GetWorld(), Iter->GetComponentLocation(), 20, 20, FColor::Red, false, 10);
-		}
-		return;
-	}
-
 	for (auto Iter : RectLightComponentAry)
 	{
 		Iter->SetHiddenInGame(true);
@@ -1070,100 +785,6 @@ void ASceneElement_Space::UpdateSpaceDeviceDataImp(
 
 void ASceneElement_Space::QuerySpaceInfo()
 {
-	if (SpaceInfoRequest.IsValid())
-	{
-		SpaceInfoRequest->CancelRequest();
-
-		SpaceInfoRequest->ProcessRequest();
-	}
-	else
-	{
-		// 1. URL
-		FString QueryDeviceAddress;
-
-		auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-		Path = FConfigCacheIni::NormalizeConfigIniPath(Path);
-		GConfig->GetString(
-		                   TEXT("SmartCitySetting"),
-		                   TEXT("QueryDeviceAddress"),
-		                   QueryDeviceAddress,
-		                   Path
-		                  );
-		FString Url = TEXT("http://") + QueryDeviceAddress;
-
-		// 2. data JSON（注意是字符串）
-		FString DataJson =
-			FString::Printf(
-			                TEXT("{\"status\":\"active\",\"bimId\":\"%s\"}"),
-			                *SceneElementID
-			               );
-
-		// 3. form-urlencoded 内容
-		FString PostData = FString::Printf(
-		                                   TEXT(
-		                                        "service=%s&version=%s&time=%s&token=%s&accessToken=%s&salt=%s&test=%s&osc=%s&data=%s"
-		                                       ),
-		                                   TEXT("getSpaceInfo"),
-		                                   TEXT("1.0"),
-		                                   TEXT("0"),
-		                                   TEXT("token"),
-		                                   TEXT("accessToken"),
-		                                   TEXT("salt"),
-		                                   TEXT("yes"),
-		                                   TEXT("test"),
-		                                   *FGenericPlatformHttp::UrlEncode(DataJson) // ⚠️ 必须 URL 编码
-		                                  );
-
-		// 4. 创建请求
-		SpaceInfoRequest =
-			FHttpModule::Get().CreateRequest();
-
-		SpaceInfoRequest->SetDelegateThreadPolicy(EHttpRequestDelegateThreadPolicy::CompleteOnHttpThread);
-
-		SpaceInfoRequest->SetURL(Url);
-		SpaceInfoRequest->SetVerb(TEXT("POST"));
-		SpaceInfoRequest->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
-		SpaceInfoRequest->SetHeader(TEXT("user"), UWebChannelWorldSystem::GetInstance()->QueryDeviceToken);
-		SpaceInfoRequest->SetContentAsString(PostData);
-
-		// 5. 回调
-		SpaceInfoRequest->OnProcessRequestComplete().BindLambda(
-		                                                        [this](
-		                                                        FHttpRequestPtr Req,
-		                                                        FHttpResponsePtr Resp,
-		                                                        bool bSuccess
-		                                                        )
-		                                                        {
-			                                                        AsyncTask(
-			                                                                  ENamedThreads::GameThread,
-			                                                                  [bSuccess, Resp, this]()
-			                                                                  {
-				                                                                  // 2️⃣ 回到主线程只做轻量更新
-				                                                                  if (bSuccess && Resp.IsValid())
-				                                                                  {
-					                                                                  // UE_LOG(LogTemp, Log, TEXT("HTTP Code: %d"), Resp->GetResponseCode());
-					                                                                  // UE_LOG(LogTemp, Log, TEXT("Response: %s"), *Resp->GetContentAsString());
-
-					                                                                  QuerySpaceInfoComplete(
-						                                                                   bSuccess,
-						                                                                   Resp->GetContentAsString()
-						                                                                  );
-
-					                                                                  GetWorldTimerManager().ClearTimer(
-						                                                                   QueryDeviceTimerHandel
-						                                                                  );
-				                                                                  }
-				                                                                  else
-				                                                                  {
-					                                                                  // UE_LOG(LogTemp, Error, TEXT("Request Failed"));
-				                                                                  }
-			                                                                  }
-			                                                                 );
-		                                                        }
-		                                                       );
-		// 6. 发送
-		SpaceInfoRequest->ProcessRequest();
-	}
 }
 
 void ASceneElement_Space::QueryDeviceInfoComplete(
@@ -1173,58 +794,6 @@ void ASceneElement_Space::QueryDeviceInfoComplete(
 {
 	QueryDeviceInfo_.Deserialize(ResponStr);
 
-	if (!QueryDeviceInfo_.body_Ary.IsEmpty())
-	{
-		if (DTMqttClientPtr)
-		{
-			bool Success;
-			FString ErrorMsg;
-
-			DTMqttClientPtr->Disconnect(Success, ErrorMsg);
-		}
-
-		UDTMqttClient::CreateMqttClient(DTMqttClientPtr);
-
-		DTMqttClientPtr->OnConnected.AddDynamic(this, &ThisClass::Connected);
-		DTMqttClientPtr->OnConnectionLost.AddDynamic(this, &ThisClass::ConnectionLost);
-		DTMqttClientPtr->OnMessageArrived.AddDynamic(this, &ThisClass::MessageArrived);
-
-		Async(
-		      EAsyncExecution::ThreadPool,
-		      [this]()
-		      {
-			      bool Success;
-			      FString ErrorMsg;
-
-			      FString MQTTAddress;
-
-			      const auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-			      FConfigCacheIni::NormalizeConfigIniPath(Path);
-			      GConfig->GetString(
-			                         TEXT("SmartCitySetting"),
-			                         TEXT("MQTTAddress"),
-			                         MQTTAddress,
-			                         Path
-			                        );
-
-			      DTMqttClientPtr->Connect(
-			                               FString::Printf(TEXT("ws://%s/mqtt"), *MQTTAddress),
-			                               TEXT(""),
-			                               TEXT(""),
-			                               TEXT(""),
-			                               60,
-			                               5,
-			                               Success,
-			                               ErrorMsg
-			                              );
-
-			      if (Success)
-
-			      {
-			      }
-		      }
-		     );
-	}
 }
 
 void ASceneElement_Space::QuerySpaceInfoComplete(
@@ -1239,158 +808,18 @@ void ASceneElement_Space::QuerySpaceInfoComplete(
 		Iter->CancelRequest();
 	}
 	RequestAry.Empty();
-
-	for (const auto& Iter : QuerySpaceInfo_.body_Ary)
-	{
-		if (Iter.bimId == SceneElementID)
-		{
-			// 1. URL
-			FString QueryDeviceAddress;
-
-			auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-			Path = FConfigCacheIni::NormalizeConfigIniPath(Path);
-			GConfig->GetString(
-			                   TEXT("SmartCitySetting"),
-			                   TEXT("QueryDeviceAddress"),
-			                   QueryDeviceAddress,
-			                   Path
-			                  );
-			FString Url = TEXT("http://") + QueryDeviceAddress;
-
-			// 2. data JSON（注意是字符串）
-			FString DataJson =
-				FString::Printf(
-				                TEXT("{\"floor\":%d,\"status\":\"active\",\"spaceId\":\"%d\"}"),
-				                BelongFloor->FloorTag.MatchesTagExact(USmartCitySuiteTags::Interaction_Area_Floor_F1J) ?
-					                105 :
-					                BelongFloor->FloorIndex,
-				                Iter.id
-				               );
-
-			// 3. form-urlencoded 内容
-			FString PostData = FString::Printf(
-			                                   TEXT(
-			                                        "service=%s&version=%s&time=%s&token=%s&accessToken=%s&salt=%s&test=%s&osc=%s&data=%s"
-			                                       ),
-			                                   TEXT("getBimModelDeviceAssociation"),
-			                                   TEXT("1.0"),
-			                                   TEXT("0"),
-			                                   TEXT("token"),
-			                                   TEXT("accessToken"),
-			                                   TEXT("salt"),
-			                                   TEXT("yes"),
-			                                   TEXT("test"),
-			                                   *FGenericPlatformHttp::UrlEncode(DataJson) // ⚠️ 必须 URL 编码
-			                                  );
-
-			// 4. 创建请求
-			auto Request =
-				FHttpModule::Get().CreateRequest();
-
-			Request->SetDelegateThreadPolicy(EHttpRequestDelegateThreadPolicy::CompleteOnHttpThread);
-
-			Request->SetURL(Url);
-			Request->SetVerb(TEXT("POST"));
-			Request->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
-			Request->SetHeader(TEXT("user"), UWebChannelWorldSystem::GetInstance()->QueryDeviceToken);
-			Request->SetContentAsString(PostData);
-
-			// 5. 回调
-			Request->OnProcessRequestComplete().BindLambda(
-			                                               [this](
-			                                               FHttpRequestPtr Req,
-			                                               FHttpResponsePtr Resp,
-			                                               bool bSuccess
-			                                               )
-			                                               {
-				                                               AsyncTask(
-				                                                         ENamedThreads::GameThread,
-				                                                         [bSuccess, Resp, this]()
-				                                                         {
-					                                                         // 2️⃣ 回到主线程只做轻量更新
-					                                                         if (bSuccess && Resp.IsValid())
-					                                                         {
-						                                                         // UE_LOG(LogTemp, Log, TEXT("HTTP Code: %d"), Resp->GetResponseCode());
-						                                                         // UE_LOG(LogTemp, Log, TEXT("Response: %s"), *Resp->GetContentAsString());
-
-						                                                         QueryDeviceInfoComplete(
-							                                                          bSuccess,
-							                                                          Resp->GetContentAsString()
-							                                                         );
-
-
-						                                                         GetWorldTimerManager().ClearTimer(
-							                                                          QueryDeviceTimerHandel
-							                                                         );
-					                                                         }
-					                                                         else
-					                                                         {
-						                                                         // UE_LOG(LogTemp, Error, TEXT("Request Failed"));
-					                                                         }
-				                                                         }
-				                                                        );
-			                                               }
-			                                              );
-			// 6. 发送
-			Request->ProcessRequest();
-
-			RequestAry.Add(Request);
-			return;
-		}
-	}
 }
 
 void ASceneElement_Space::Connected(
 	const FString& Cause
 	)
 {
-	for (const auto& Iter : QueryDeviceInfo_.body_Ary)
-	{
-		if (Iter.supplier == TEXT("panno"))
-		{
-			bool Success;
-			FString ErrorMsg;
-			DTMqttClientPtr->Subscribe(
-			                           FString::Printf(
-			                                           TEXT("enno_p2_product/p2/android/%s/#"),
-			                                           *Iter.deviceId
-			                                          ),
-			                           EDT_QualityOfService::QoS0,
-			                           Success,
-			                           ErrorMsg
-			                          );
-			if (Success)
-			{
-			}
-
-			DTMqttClientPtr->Publish(
-			                         FString::Printf(
-			                                         TEXT("enno_p2_product/p2/panno/%s"),
-			                                         *Iter.deviceId
-			                                        ),
-			                         FString::Printf(
-			                                         TEXT(
-			                                              R"({"type":"GetAllDeviceInfo","time":"2025-11-04 11:06:20","id":"%s"})"
-			                                             ),
-			                                         *Iter.deviceId
-			                                        ),
-			                         EDT_QualityOfService::QoS0,
-			                         true,
-			                         Success,
-			                         ErrorMsg
-			                        );
-			if (Success)
-			{
-			}
-		}
-	}
 }
 
 void ASceneElement_Space::ConnectionLost(
 	const FString& Cause
 	)
 {
-	DTMqttClientPtr = nullptr;
 }
 
 void ASceneElement_Space::MessageArrived(

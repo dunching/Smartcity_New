@@ -6,7 +6,7 @@
 #include "AssetRefMap.h"
 #include "DatasmithAssetUserData.h"
 #include "MessageBody.h"
-#include "PlanetPlayerController.h"
+#include "AssetRefMap.h"
 #include "PlayerGameplayTasks.h"
 #include "RouteMarker.h"
 #include "SceneElementBase.h"
@@ -700,21 +700,6 @@ void USceneInteractionWorldSystem::Operation(
 	EOperatorType OperatorType
 	) const
 {
-	// 如果有进行的任务，暂停操作
-	if (Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()))->GameplayTasksComponentPtr->
-		HasActiveTasks(UGameplayTask::StaticClass()))
-	{
-		return;
-	}
-
-	const auto TempDecoratorLayerAssetMap = DecoratorLayerAssetMap;
-	for (const auto& Iter : TempDecoratorLayerAssetMap)
-	{
-		if (Iter.Value)
-		{
-			Iter.Value->Operation(OperatorType);
-		}
-	}
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Tower(
@@ -730,24 +715,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Tower(
 		)>& OnEnd
 	)
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_Tower>(
-		 bBreakRuntimeTask,
-		 bBreakCameraRuntimeTask,
-		 [this, OnEnd, &FilterTags](
-		 UGT_SwitchSceneElement_Tower* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 SceneInteractionWorldSystemPtr =
-					 this;
-				 GTPtr->FilterTags = FilterTags;
-				 GTPtr->OnEnd = OnEnd;
-			 }
-		 }
-		);
+	return nullptr;
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Floor(
@@ -766,52 +734,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Floor(
 	const TSet<TObjectPtr<ASceneElementBase>>& SkipSceneElementSet
 	)
 {
-	if (FilterTags.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF))
-	{
-		auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-		return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_Floor_JF>(
-			 bBreakRuntimeTask,
-			 bBreakCameraRuntimeTask,
-			 [this, OnEnd, &FilterTags, SkipSceneElementSet, FloorSet](
-			 UGT_SwitchSceneElement_Floor_JF* GTPtr
-			 )
-			 {
-				 if (GTPtr)
-				 {
-					 GTPtr->
-						 SceneInteractionWorldSystemPtr =
-						 this;
-					 GTPtr->FilterTags = FilterTags;
-					 GTPtr->SkipSceneElementSet = SkipSceneElementSet;
-					 GTPtr->FloorSet = FloorSet;
-					 GTPtr->OnEnd = OnEnd;
-				 }
-			 }
-			);
-	}
-	else
-	{
-		auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-		return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_Floor>(
-			 bBreakRuntimeTask,
-			 bBreakCameraRuntimeTask,
-			 [this, OnEnd, &FilterTags, SkipSceneElementSet, FloorSet](
-			 UGT_SwitchSceneElement_Floor* GTPtr
-			 )
-			 {
-				 if (GTPtr)
-				 {
-					 GTPtr->
-						 SceneInteractionWorldSystemPtr =
-						 this;
-					 GTPtr->FilterTags = FilterTags;
-					 GTPtr->SkipSceneElementSet = SkipSceneElementSet;
-					 GTPtr->FloorSet = FloorSet;
-					 GTPtr->OnEnd = OnEnd;
-				 }
-			 }
-			);
-	}
+	return nullptr;
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Space(
@@ -832,29 +755,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Space(
 	const TSet<TObjectPtr<ASceneElementBase>>& SkipSceneElementSet
 	)
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_Space>(
-		 bBreakRuntimeTask,
-		 bBreakCameraRuntimeTask,
-		 [this, OnEnd, &FilterTags, SceneElementPtr, SkipSceneElementSet, FloorSet](
-		 UGT_SwitchSceneElement_Space* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 SceneInteractionWorldSystemPtr =
-					 this;
-				 GTPtr->FilterTags = FilterTags;
-
-				 GTPtr->FloorSet = FloorSet;
-
-				 GTPtr->SceneElementPtr = SceneElementPtr;
-				 GTPtr->SkipSceneElementSet = SkipSceneElementSet;
-				 GTPtr->OnEnd = OnEnd;
-			 }
-		 }
-		);
+	return nullptr;
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Device(
@@ -874,29 +775,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Device(
 	TWeakObjectPtr<ASceneElement_DeviceBase> SceneElementPtr
 	)
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_Device>(
-		 bBreakRuntimeTask,
-		 bBreakCameraRuntimeTask,
-		 [this, OnEnd, &FilterTags, SceneElementPtr, FloorSet](
-		 UGT_SwitchSceneElement_Device* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 SceneInteractionWorldSystemPtr =
-					 this;
-				 GTPtr->FilterTags = FilterTags;
-
-				 GTPtr->SceneElementSet.Add(SceneElementPtr.Get());
-
-				 GTPtr->FloorSet = FloorSet;
-
-				 GTPtr->OnEnd = OnEnd;
-			 }
-		 }
-		);
+	return nullptr;
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_BatchControlDevice(
@@ -914,30 +793,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_BatchCon
 	FGameplayTag FloorTag
 	)
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_BatchDevicesControl>(
-		 bBreakRuntimeTask,
-		 bBreakCameraRuntimeTask,
-		 [this, OnEnd, &FilterTags, SceneElementSet, FloorTag](
-		 UGT_SwitchSceneElement_BatchDevicesControl* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 SceneInteractionWorldSystemPtr =
-					 this;
-
-				 GTPtr->FilterTags = FilterTags;
-
-				 GTPtr->SceneElementSet = SceneElementSet;
-
-				 GTPtr->FloorTag = FloorTag;
-
-				 GTPtr->OnEnd = OnEnd;
-			 }
-		 }
-		);
+	return nullptr;
 }
 
 UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_SpeacialArea(
@@ -957,77 +813,13 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Speacial
 
 	)
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	return PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_SwitchSceneElement_SpecialArea>(
-		 bBreakRuntimeTask,
-		 bBreakCameraRuntimeTask,
-		 [this, OnEnd, &FilterTags, FloorSet, PriorityHideFloorSet](
-		 UGT_SwitchSceneElement_SpecialArea* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 SceneInteractionWorldSystemPtr =
-					 this;
-				 GTPtr->FilterTags = FilterTags;
-				 GTPtr->OnEnd = OnEnd;
-
-				 GTPtr->FloorSet = FloorSet;
-				 GTPtr->PriorityHideFloorSet = PriorityHideFloorSet;
-			 }
-		 }
-		);
+	return nullptr;
 }
 
 void USceneInteractionWorldSystem::InitializeSceneActors()
 {
 	SCOPE_LOG_TIME_FUNC();
 
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_InitializeSceneActors>(
-		 false,
-		 false,
-		 [this](
-		 UGT_InitializeSceneActors* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->SceneInteractionWorldSystemPtr = this;
-				 GTPtr->OnEnd.AddLambda(
-				                        [this](
-				                        bool
-				                        )
-				                        {
-					                        FTSTicker::GetCoreTicker().AddTicker(
-						                         FTickerDelegate::CreateLambda(
-						                                                       [](
-						                                                       auto
-						                                                       )
-						                                                       {
-							                                                       auto d = GetWorldImp();
-							                                                       USceneInteractionWorldSystem::GetInstance()
-								                                                       ->SwitchInteractionArea(
-									                                                        USmartCitySuiteTags::Interaction_Area_ExternalWall
-									                                                       );
-
-							                                                       auto MessageSPtr = MakeShared<
-								                                                       FMessageBody_UE_Initialized>();
-
-							                                                       UWebChannelWorldSystem::GetInstance()
-								                                                       ->SendMessage(MessageSPtr);
-
-							                                                       return false;
-						                                                       }
-						                                                      ),
-						                         10.f
-						                        );
-				                        }
-				                       );
-			 }
-		 }
-		);
 }
 
 TWeakObjectPtr<ASceneElementBase> USceneInteractionWorldSystem::FindSceneActor(

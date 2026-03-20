@@ -28,10 +28,6 @@ namespace TourProcessor
 	public:
 		using FOwnerPawnType = ATourPawn;
 
-		FViewSingleSpaceProcessor(
-			FOwnerPawnType* CharacterPtr
-			);
-
 		virtual void EnterAction() override;
 
 		virtual bool InputKey(

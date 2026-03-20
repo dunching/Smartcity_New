@@ -1,17 +1,15 @@
 #include "SceneElement_SunShade.h"
 
-#include "ActorSequenceComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetStringLibrary.h"
+#include "Components/BoxComponent.h"
 
 #include "CollisionDataStruct.h"
-#include "GameplayTagsLibrary.h"
 #include "RouteMarker.h"
 #include "AssetRefMap.h"
 #include "FloorHelper.h"
 #include "SmartCitySuiteTags.h"
-#include "Components/BoxComponent.h"
 
 ASceneElement_SunShade::ASceneElement_SunShade(
 	const FObjectInitializer& ObjectInitializer

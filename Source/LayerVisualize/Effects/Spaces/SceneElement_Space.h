@@ -186,9 +186,6 @@ public:
 	 */
 	TMap<FString, TMap<FString, int32>> Values;
 	
-	UPROPERTY()
-	UDTMqttClient* DTMqttClientPtr = nullptr;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float IntervalTime = 10.f;
 

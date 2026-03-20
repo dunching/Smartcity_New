@@ -9,12 +9,8 @@
 #include "AssetRefMap.h"
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
-#include "MessageBody.h"
 #include "RouteMarker.h"
 #include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
-#include "DTMqttClient.h"
 #include "SceneElement_Space.h"
 
 ASceneElement_ControlBorder::ASceneElement_ControlBorder(
@@ -68,12 +64,6 @@ FBox ASceneElement_ControlBorder::GetComponentsBoundingBox(
 void ASceneElement_ControlBorder::InitialSceneElement()
 {
 	Super::InitialSceneElement();
-
-	UDTMqttClient::CreateMqttClient(DTMqttClientPtr);
-
-	DTMqttClientPtr->OnConnected.AddDynamic(this, &ThisClass::Connected);
-	DTMqttClientPtr->OnConnectionLost.AddDynamic(this, &ThisClass::ConnectionLost);
-	DTMqttClientPtr->OnMessageArrived.AddDynamic(this, &ThisClass::MessageArrived);
 
 	FString MQTTAddress;
 
@@ -312,41 +302,12 @@ void ASceneElement_ControlBorder::Connected(
 	const FString& Cause
 	)
 {
-	// DeviceRealID = TEXT("0001-0108-2523-0009");
-	
-	bool Success = false;
-	FString ErrorMsg;
-	DTMqttClientPtr->Subscribe(
-	                           FString::Printf(TEXT("enno_p2_product/p2/android/%s/#"), *DeviceRealID),
-	                           EDT_QualityOfService::QoS0,
-	                           Success,
-	                           ErrorMsg
-	                          );
-	if (Success)
-	{
-	}
-
-	DTMqttClientPtr->Publish(
-	                         FString::Printf(TEXT("enno_p2_product/p2/panno/%s"), *DeviceRealID),
-	                         FString::Printf(
-	                                         TEXT(R"({"type":"GetAllDeviceInfo","time":"2025-11-04 11:06:20","%s"})"),
-	                                         *DeviceRealID
-	                                        ),
-	                         EDT_QualityOfService::QoS0,
-	                         true,
-	                         Success,
-	                         ErrorMsg
-	                        );
-	if (Success)
-	{
-	}
 }
 
 void ASceneElement_ControlBorder::ConnectionLost(
 	const FString& Cause
 	)
 {
-	DTMqttClientPtr = nullptr;
 }
 
 void ASceneElement_ControlBorder::MessageArrived(
@@ -401,63 +362,6 @@ void ASceneElement_ControlBorder::QueryDeviceInfoComplete(
 {
 	Super::QueryDeviceInfoComplete(bSuccess, ResponStr);
 
-	if (bSuccess)
-	{
-		if (DTMqttClientPtr)
-		{
-		
-		}
-		else
-		{
-			UDTMqttClient::CreateMqttClient(DTMqttClientPtr);
-
-			DTMqttClientPtr->OnConnected.AddDynamic(this, &ThisClass::Connected);
-			DTMqttClientPtr->OnConnectionLost.AddDynamic(this, &ThisClass::ConnectionLost);
-			DTMqttClientPtr->OnMessageArrived.AddDynamic(this, &ThisClass::MessageArrived);
-
-			FString MQTTAddress;
-	
-			const auto Path = FPaths::ProjectContentDir() / TEXT("Configs") / TEXT("RuntimeConfig.ini");
-			FConfigCacheIni::NormalizeConfigIniPath(Path);
-			GConfig->GetString(
-							   TEXT("SmartCitySetting"),
-							   TEXT("MQTTAddress"),
-							   MQTTAddress,
-							   Path
-							  );
-
-			bool Success = false;
-			FString ErrorMsg;
-			DTMqttClientPtr->Connect(
-									 FString::Printf(TEXT("ws://%s/mqtt"), *MQTTAddress),
-									 TEXT(""),
-									 TEXT(""),
-									 TEXT(""),
-									 60,
-									 5,
-									 Success,
-									 ErrorMsg
-									);
-
-			if (Success)
-			{
-			}
-		}
-	}
-	else
-	{
-		if (DTMqttClientPtr)
-		{
-			bool Success = false;
-			FString ErrorMsg;
-			DTMqttClientPtr->Disconnect(Success, ErrorMsg);
-		}
-		else
-		{
-		}
-
-		DTMqttClientPtr = nullptr;
-	}
 }
 
 void ASceneElement_ControlBorder::FAirData::Deserialize(

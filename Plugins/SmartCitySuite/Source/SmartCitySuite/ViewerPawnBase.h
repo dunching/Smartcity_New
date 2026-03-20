@@ -20,7 +20,7 @@ class UCameraComponent;
  */
 UCLASS()
 class SMARTCITYSUITE_API AViewerPawnBase :
-	public APawn
+	public AActor
 {
 	GENERATED_BODY()
 

@@ -6,9 +6,7 @@
 #include "Components/BoxComponent.h"
 
 #include "CollisionDataStruct.h"
-#include "MessageBody.h"
 #include "SmartCitySuiteTags.h"
-#include "WebChannelWorldSystem.h"
 #include "Components/WidgetSwitcher.h"
 
 ASceneElement_Monitor::ASceneElement_Monitor(
@@ -170,13 +168,6 @@ void ASceneElement_Monitor::EntryFocusDevice()
 //		StaticMeshComponent->SetRenderCustomDepth(true);
 //		StaticMeshComponent->SetCustomDepthStencilValue(UGameOptions::GetInstance()->FocusOutline);
 	}
-
-	auto MessageBodySPtr = MakeShared<FMessageBody_ViewDevice>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-	MessageBodySPtr->Type = DeviceTypeStr;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);
 }
 
 void ASceneElement_Monitor::EntryViewDevice()
@@ -244,13 +235,7 @@ void ASceneElement_Monitor::QuitAllState()
 }
 
 void ASceneElement_Monitor::OnClicked()
-{										
-	auto MessageBodySPtr = MakeShared<FMessageBody_ClickedMonitor>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-	MessageBodySPtr->Type = DeviceTypeStr;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);									
+{																	
 }
 
 void UMonitorHoverWidget::NativeConstruct()

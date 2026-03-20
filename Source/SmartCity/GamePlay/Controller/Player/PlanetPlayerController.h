@@ -35,10 +35,4 @@ public:
 		APawn* InPawn
 		) override;
 
-	UPROPERTY()
-	TObjectPtr<UPlayerControllerGameplayTasksComponent> GameplayTasksComponentPtr = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UPixelStreamingInput> PixelStreamingInputPtr = nullptr;
-
 };

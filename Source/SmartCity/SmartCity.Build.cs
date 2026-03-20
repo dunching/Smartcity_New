@@ -24,10 +24,9 @@ public class SmartCity : ModuleRules
 		{
 		} 
 
-		PublicDefinitions.Add("TEST_RADAR = 0");  
-		PublicDefinitions.Add("TEST_AIRQUALITY = 0");  
-		PublicDefinitions.Add("TEST_ELEVATOR = 1");  
-		PublicDefinitions.Add("TEST_RADARLOG = 0");  
+		PrivateDefinitions.Add("TEST_AIRQUALITY = 0");  
+		PrivateDefinitions.Add("TEST_ELEVATOR = 1");  
+		PrivateDefinitions.Add("TEST_RADARLOG = 0");  
 
 		PublicIncludePaths.Add("SmartCity");
 		PublicIncludePaths.Add("SmartCity/OpenWorld");
@@ -110,6 +109,7 @@ public class SmartCity : ModuleRules
 			"LayerVisualize",
 			"LayerData",
 			"LayerController",
+			"AssetRef",
 		});
 
 		PrivateIncludePathModuleNames.AddRange(new string[]

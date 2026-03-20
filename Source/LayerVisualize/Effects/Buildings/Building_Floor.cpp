@@ -1,8 +1,6 @@
 #include "Building_Floor.h"
 
 #include "AssetRefMap.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
 
@@ -50,18 +48,6 @@ void ABuilding_Floor::SwitchInteractionType(
 		if ((ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Floor) ||
 			 ConditionalSet.ConditionalSet.HasTag(USmartCitySuiteTags::Interaction_Area_Space)))
 		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-															 USceneInteractionWorldSystem::GetInstance()->
-															 GetDecorator(
-																		  USmartCitySuiteTags::Interaction_Interaction
-																		 )
-															);
-			if (DecoratorSPtr)
-			{
-
-			}
 
 			SwitchState(EState::kOriginal);
 

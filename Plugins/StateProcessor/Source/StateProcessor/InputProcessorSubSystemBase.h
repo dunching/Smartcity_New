@@ -145,9 +145,7 @@ void UInputProcessorSubSystemBase::SwitchToProcessorBase(
 
 	TSharedPtr<ProcessorType> ActionProcessSPtr;
 
-	auto PawnPtr = GEngine->GetFirstLocalPlayerController(GetWorldImp())->GetPawn();
-	auto CharacterPtr = Cast<typename ProcessorType::FOwnerPawnType>(PawnPtr);
-	ActionProcessSPtr = MakeShared<ProcessorType>(CharacterPtr);
+	ActionProcessSPtr = MakeShared<ProcessorType>();
 	ActionProcessSPtr->OnQuitFunc = OnQuitFunc;
 
 	if (InitSwitchFunc)

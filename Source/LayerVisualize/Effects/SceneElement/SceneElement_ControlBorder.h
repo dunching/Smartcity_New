@@ -140,9 +140,6 @@ protected:
 
 	FAirData AirData;
 	
-	UPROPERTY()
-	UDTMqttClient* DTMqttClientPtr = nullptr;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> StaticMeshComponent = nullptr;
 

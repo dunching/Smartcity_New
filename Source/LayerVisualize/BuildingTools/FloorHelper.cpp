@@ -11,8 +11,6 @@
 #include "FloorHelper_Description.h"
 #include "SceneElementCategory.h"
 #include "SceneElement_Computer.h"
-#include "SceneInteractionDecorator_Area.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
 #include "ViewerPawnBase.h"
@@ -416,31 +414,6 @@ void AFloorHelper::OnHourChanged(
 	int32 Hour
 	)
 {
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-
-	if (!AreaDecoratorSPtr)
-	{
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-		}
-		return;
-	}
-
-	if (!AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_ExternalWall))
-	{
-		for (auto Iter : RectLightComponentAry)
-		{
-			Iter->SetHiddenInGame(true);
-		}
-		return;
-	}
-
 	if (Hour > 18 || Hour < 8)
 	{
 		for (auto Iter : RectLightComponentAry)

@@ -7,7 +7,6 @@
 
 #include "CollisionDataStruct.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
 #include "SmartCitySuiteTags.h"
 
 ASceneElementManagger_AccessControl::ASceneElementManagger_AccessControl(

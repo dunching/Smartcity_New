@@ -5,15 +5,7 @@
 #include "Engine/StaticMeshActor.h"
 
 #include "AssetRefMap.h"
-#include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
-#include "MessageBody.h"
 #include "SmartCitySuiteTags.h"
-#include "PersonMark.h"
-#include "SceneInteractionDecorator.h"
-#include "SceneInteractionWorldSystem.h"
-#include "TemplateHelper.h"
-#include "WebChannelWorldSystem.h"
 
 ASceneElement_InfraredDetector::ASceneElement_InfraredDetector(
 	const FObjectInitializer& ObjectInitializer

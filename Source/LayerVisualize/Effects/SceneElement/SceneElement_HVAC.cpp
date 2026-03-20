@@ -8,18 +8,8 @@
 #include "Kismet/KismetStringLibrary.h"
 
 #include "CollisionDataStruct.h"
-#include "GameplayTagsLibrary.h"
-#include "IPSSI.h"
-#include "MessageBody.h"
 #include "SceneElement_PWR_Pipe.h"
-#include "SceneInteractionDecorator_Mode.h"
-#include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
-#include "TemplateHelper.h"
-#include "ViewSingleDeviceProcessor.h"
-#include "TourPawn.h"
-#include "WebChannelWorldSystem.h"
-#include "Kismet/KismetMathLibrary.h"
 
 ASceneElement_HVAC::ASceneElement_HVAC(
 	const FObjectInitializer& ObjectInitializer
@@ -113,39 +103,6 @@ void ASceneElement_HVAC::SwitchInteractionType(
 			SetActorHiddenInGame(false);
 
 			NiagaraComponentPtr->SetActive(false);
-
-			auto TempPipePtr = USceneInteractionWorldSystem::GetInstance()->FindSceneActor(PWR_ID);
-			if (!TempPipePtr.IsValid())
-			{
-				return;
-			}
-
-			auto PipePtr = Cast<ASceneElement_PWR_Pipe>(TempPipePtr);
-			if (!PipePtr)
-			{
-				return;
-			}
-
-			if (!PipePtr->ExtensionParamMap.Contains(TEXT("value")))
-			{
-				return;
-			}
-			
-			auto EnergyMaterialInst = UAssetRefMap::GetInstance()->EnergyDeviceMaterialInst.LoadSynchronous();
-
-			auto MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(EnergyMaterialInst, this);
-
-			const auto EnergyValue = PipePtr->EnergyValue;
-			MaterialInstanceDynamic->SetScalarParameterValue(TEXT("EnergyValue"), EnergyValue);
-
-			CacheOriginalMat({StaticMeshComponent});
-			if (StaticMeshComponent)
-			{
-				for (int32 Index = 0; Index < StaticMeshComponent->GetNumMaterials(); Index++)
-				{
-					StaticMeshComponent->SetMaterial(Index, MaterialInstanceDynamic);
-				}
-			}
 
 			return;
 		}
@@ -264,13 +221,6 @@ void ASceneElement_HVAC::EntryFocusDevice()
 		PrimitiveComponentPtr->SetRenderCustomDepth(true);
 		PrimitiveComponentPtr->SetCustomDepthStencilValue(UGameOptions::GetInstance()->FocusOutline);
 	}
-
-	auto MessageBodySPtr = MakeShared<FMessageBody_ViewDevice>();
-
-	MessageBodySPtr->DeviceID = SceneElementID;
-	MessageBodySPtr->Type = DeviceTypeStr;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageBodySPtr);
 }
 
 void ASceneElement_HVAC::QuitFocusDevice()

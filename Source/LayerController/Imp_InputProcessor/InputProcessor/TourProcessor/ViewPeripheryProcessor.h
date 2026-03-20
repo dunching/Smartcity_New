@@ -9,7 +9,6 @@
 #include "TourProcessor.h"
 
 class ATrackVehicleBase;
-class ATourPawn;
 class AHorseCharacter;
 class ABuildingBase;
 
@@ -25,10 +24,6 @@ namespace TourProcessor
 		GENERATIONCLASSINFO(FViewPeripheryProcessor, FTourProcessor);
 
 	public:
-		using FOwnerPawnType = ATourPawn;
-
-		FViewPeripheryProcessor(FOwnerPawnType* CharacterPtr);
-
 		virtual void EnterAction() override;
 
 		virtual bool InputKey(

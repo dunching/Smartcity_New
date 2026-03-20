@@ -6,7 +6,6 @@
 #include "CollisionDataStruct.h"
 #include "ElevatorMark.h"
 #include "FloorHelper.h"
-#include "GameplayTagsLibrary.h"
 #include "SmartCitySuiteTags.h"
 
 AElevator::AElevator(

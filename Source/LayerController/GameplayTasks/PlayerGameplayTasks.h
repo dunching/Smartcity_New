@@ -14,6 +14,7 @@
 #include "GenerateTypes.h"
 #include "LogWriter.h"
 #include "SceneInteractionWorldSystem.h"
+#include "GameplayTaskHelper.h"
 
 #include "PlayerGameplayTasks.generated.h"
 
@@ -33,71 +34,13 @@ class UDatasmithAssetUserData;
 
 struct FSceneElementMap;
 
-/*
- * PlayerController处理异步的组件
- */
-UCLASS(
-	BlueprintType,
-	Blueprintable
-)
-class SMARTCITY_API UPlayerControllerGameplayTasksComponent : public UGameplayTasksComponent
-{
-	GENERATED_BODY()
-
-public:
-	static FName ComponentName;
-
-	virtual void OnGameplayTaskDeactivated(
-		UGameplayTask& Task
-		) override;
-
-	template <typename GameplayTaskType>
-	GameplayTaskType* StartGameplayTask(
-		bool bBreakRuntimeTask,
-		bool bBreakCameraRuntimeTask,
-		const std::function<void(
-			GameplayTaskType*
-
-
-			
-			)>& Func
-		);
-
-	TArray<TObjectPtr<UGameplayTaskBase>> RuntimeTaskAry;
-};
-
-
 #pragma region 摄像机修改
-
-UCLASS()
-class SMARTCITY_API UGameplayTaskBase : public UGameplayTask
-{
-	GENERATED_BODY()
-
-public:
-	class UPlayerControllerGameplayTasksComponent;
-
-	using FOnTaskComplete = TMulticastDelegate<void(
-		bool
-		)>;
-
-	virtual void OnDestroy(
-		bool bInOwnerFinished
-		) override;
-
-	UPROPERTY(Transient)
-	TArray<TObjectPtr<UGameplayTaskBase> >NextTaskAry;
-
-protected:
-	FOnTaskComplete OnTaskComplete;
-};
-
 
 /**
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_CameraTransform : public UGameplayTaskBase
+class LAYERCONTROLLER_API UGT_CameraTransform : public UGameplayTaskBase
 {
 	GENERATED_BODY()
 
@@ -143,7 +86,7 @@ private:
  * 恢复到原始视角
  */
 UCLASS()
-class SMARTCITY_API UGT_ReplyCameraTransform : public UGT_CameraTransform
+class LAYERCONTROLLER_API UGT_ReplyCameraTransform : public UGT_CameraTransform
 {
 	GENERATED_BODY()
 
@@ -162,7 +105,7 @@ public:
 };
 
 UCLASS()
-class SMARTCITY_API UGT_CameraTransformByPawnViewer : public UGT_CameraTransform
+class LAYERCONTROLLER_API UGT_CameraTransformByPawnViewer : public UGT_CameraTransform
 {
 	GENERATED_BODY()
 
@@ -184,7 +127,7 @@ public:
  * 移动到指定Transform
  */
 UCLASS()
-class SMARTCITY_API UGT_ModifyCameraTransform : public UGT_CameraTransform
+class LAYERCONTROLLER_API UGT_ModifyCameraTransform : public UGT_CameraTransform
 {
 	GENERATED_BODY()
 
@@ -204,7 +147,7 @@ public:
  * 定位某个设备
  */
 UCLASS()
-class SMARTCITY_API UGT_CameraTransformLocaterByID : public UGT_CameraTransform
+class LAYERCONTROLLER_API UGT_CameraTransformLocaterByID : public UGT_CameraTransform
 {
 	GENERATED_BODY()
 
@@ -224,7 +167,7 @@ public:
  * 定位某个区域
  */
 UCLASS()
-class SMARTCITY_API UGT_CameraTransformLocaterBySpace : public UGT_CameraTransform
+class LAYERCONTROLLER_API UGT_CameraTransformLocaterBySpace : public UGT_CameraTransform
 {
 	GENERATED_BODY()
 
@@ -240,59 +183,13 @@ public:
 
 #pragma endregion
 
-#pragma region 批量任务处理
-
-/**
- * 
- */
-UCLASS()
-class SMARTCITY_API UGT_BatchBase : public UGameplayTaskBase
-{
-	GENERATED_BODY()
-
-public:
-	using FOnEnd = TMulticastDelegate<void(
-		bool
-		)>;
-
-	UGT_BatchBase(
-		const FObjectInitializer& ObjectInitializer
-		);
-
-	virtual void TickTask(
-		float DeltaTime
-		) override;
-
-protected:
-	virtual bool ProcessTask(
-		float DeltaTime
-		);
-
-	double ScopeTime = .1f;
-
-	enum class EUseScopeType
-	{
-		kTime,
-		kCount,
-		kNone,
-	};
-
-	EUseScopeType UseScopeType = EUseScopeType::kTime;
-
-	int32 PerTickProcessNum = 100;
-
-private:
-};
-
-#pragma endregion
-
 #pragma region 数据处理
 
 /**
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_InitializeSceneActors : public UGT_BatchBase
+class LAYERCONTROLLER_API UGT_InitializeSceneActors : public UGT_InitializeSceneBase
 {
 	GENERATED_BODY()
 
@@ -402,19 +299,11 @@ private:
 
 #pragma region 场景对象切换
 
-UCLASS()
-class SMARTCITY_API UGT_RuntimeTask : public UGT_BatchBase
-{
-	GENERATED_BODY()
-
-public:
-};
-
 /**
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Base : public UGT_RuntimeTask
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Base : public UGT_RuntimeTask
 {
 	GENERATED_BODY()
 
@@ -497,7 +386,7 @@ protected:
 };
 
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Tower : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Tower : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -522,7 +411,7 @@ private:
 };
 
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Floor : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Floor : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -537,7 +426,7 @@ public:
 };
 
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Floor_JF : public UGT_SwitchSceneElement_Floor
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Floor_JF : public UGT_SwitchSceneElement_Floor
 {
 	GENERATED_BODY()
 
@@ -555,7 +444,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Space : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Space : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -579,7 +468,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_Device : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_Device : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -601,7 +490,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_BatchDevicesControl : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_BatchDevicesControl : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -625,7 +514,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_SwitchSceneElement_SpecialArea : public UGT_SwitchSceneElement_Base
+class LAYERCONTROLLER_API UGT_SwitchSceneElement_SpecialArea : public UGT_SwitchSceneElement_Base
 {
 	GENERATED_BODY()
 
@@ -649,7 +538,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_FloorSplit : public UGT_RuntimeTask
+class LAYERCONTROLLER_API UGT_FloorSplit : public UGT_RuntimeTask
 {
 	GENERATED_BODY()
 
@@ -660,7 +549,7 @@ public:
  * 
  */
 UCLASS()
-class SMARTCITY_API UGT_QuitFloorSplit : public UGT_RuntimeTask
+class LAYERCONTROLLER_API UGT_QuitFloorSplit : public UGT_RuntimeTask
 {
 	GENERATED_BODY()
 
@@ -670,7 +559,7 @@ public:
 #pragma endregion
 
 UCLASS()
-class SMARTCITY_API UGT_RuntimeTask_Generic : public UGT_RuntimeTask
+class LAYERCONTROLLER_API UGT_RuntimeTask_Generic : public UGT_RuntimeTask
 {
 	GENERATED_BODY()
 
@@ -679,73 +568,3 @@ public:
 	TFunction<void()> Func;
 	
 };
-
-template <typename GameplayTaskType>
-GameplayTaskType* UPlayerControllerGameplayTasksComponent::StartGameplayTask(
-	bool bBreakRuntimeTask,
-	bool bBreakCameraRuntimeTask,
-	const std::function<void(
-		GameplayTaskType*
-		)>& Func
-	)
-{
-	if (bBreakRuntimeTask)
-	{
-		if constexpr (std::same_as<GameplayTaskType, UGT_InitializeSceneActors>)
-		{
-		}
-		else
-		{
-			const auto TempKnownTasks = KnownTasks;
-			for (auto Iter : TempKnownTasks)
-			{
-				if (Iter->IsA(UGT_RuntimeTask::StaticClass()))
-				{
-					Iter->EndTask();
-				}
-			}
-		}
-	}
-
-	if (bBreakCameraRuntimeTask)
-	{
-		if constexpr (std::same_as<GameplayTaskType, UGT_InitializeSceneActors>)
-		{
-		}
-		else
-		{
-			const auto TempKnownTasks = KnownTasks;
-			for (auto Iter : TempKnownTasks)
-			{
-				if (Iter->IsA(UGT_CameraTransform::StaticClass()))
-				{
-					Iter->EndTask();
-				}
-			}
-		}
-	}
-
-	if (KnownTasks.IsEmpty())
-	{
-	}
-	else
-	{
-		PRINTINVOKEWITHSTR(FString( TEXT("")));
-	}
-
-	auto GameplayTaskPtr = UGameplayTask::NewTask<GameplayTaskType>(
-	                                                                TScriptInterface<
-		                                                                IGameplayTaskOwnerInterface>(
-		                                                                 this
-		                                                                )
-	                                                               );
-
-	if (Func)
-	{
-		Func(GameplayTaskPtr);
-	}
-
-	GameplayTaskPtr->ReadyForActivation();
-
-	return GameplayTaskPtr;
-}

@@ -1,10 +1,5 @@
 #include "SceneInteractionDecorator_Area.h"
 
-#include "Kismet/GameplayStatics.h"
-#include "Net/WebChannelWorldSystem.h"
-#include "Components/BoxComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-
 #include "AssetRefMap.h"
 #include "CollisionDataStruct.h"
 #include "GameOptions.h"
@@ -16,20 +11,16 @@
 #include "DatasmithSceneActor.h"
 #include "Dynamic_WeatherBase.h"
 #include "FloorHelper.h"
-#include "PlanetPlayerController.h"
 #include "PlayerGameplayTasks.h"
 #include "SceneElement_PWR_Pipe.h"
 #include "TemplateHelper.h"
 #include "FloorHelperBase.h"
 #include "IPSSI.h"
-#include "NavagationPaths.h"
-#include "PersonMark.h"
 #include "SceneElementCategory.h"
 #include "SceneElement_Space.h"
 #include "SmartCitySuiteTags.h"
 #include "ViewSingleFloorProcessor.h"
 #include "WeatherSystem.h"
-#include "TourPawn.h"
 #include "ViewTowerProcessor.h"
 #include "ViewSingleDeviceProcessor.h"
 #include "ViewSingleFloorViewEnergyProcessor.h"
@@ -454,22 +445,6 @@ void FViewTower_Decorator::OnUpdateFilterComplete(
 
 void FViewTower_Decorator::AdjustViewElevatorCamera() const
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_CameraTransformByPawnViewer>(
-		 false,
-		 true,
-		 [](
-		 UGT_CameraTransformByPawnViewer* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->
-					 ViewerPawnPtr
-					 = UAssetRefMap::GetInstance()->ViewElevatorCameraSeat.LoadSynchronous();
-			 }
-		 }
-		);
 }
 
 FViewPeriphery_Decorator::FViewPeriphery_Decorator() :
@@ -835,17 +810,6 @@ FSplitFloor_Decorator::FSplitFloor_Decorator(
 void FSplitFloor_Decorator::Entry()
 {
 	Super::Entry();
-
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_FloorSplit>(
-	                                                                    true,
-	                                                                    true,
-	                                                                    [this](
-	                                                                    UGT_FloorSplit* GTPtr
-	                                                                    )
-	                                                                    {
-	                                                                    }
-	                                                                   );
 
 	UInputProcessorSubSystem_Imp::GetInstance()->SwitchToProcessor<TourProcessor::FViewSplitFloorProcessor>(
 		 [](
@@ -1697,190 +1661,6 @@ bool FFloor_Decorator::Operation(
 {
 	Super::Operation(OperatorType);
 
-	switch (OperatorType)
-	{
-	case EOperatorType::kLeftMouseButton:
-	case EOperatorType::kRightMouseButton:
-		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-				                                             USceneInteractionWorldSystem::GetInstance()->
-				                                             GetDecorator(
-				                                                          USmartCitySuiteTags::Interaction_Interaction
-				                                                         )
-				                                            );
-			if (DecoratorSPtr)
-			{
-				switch (DecoratorSPtr->GetInteractionType())
-				{
-				case EInteractionType::kDevice:
-					{
-						TArray<struct FHitResult> OutHits;
-
-						auto PCPtr = Cast<APlanetPlayerController>(
-						                                           GEngine->GetFirstLocalPlayerController(GetWorldImp())
-						                                          );
-
-						FVector2D MousePosition;
-						PCPtr->GetMousePosition(
-						                        MousePosition.X,
-						                        MousePosition.Y
-						                       );
-
-						FVector WorldLocation;
-						FVector WorldDirection;
-						PCPtr->DeprojectScreenPositionToWorld(
-						                                      MousePosition.X,
-						                                      MousePosition.Y,
-						                                      WorldLocation,
-						                                      WorldDirection
-						                                     );
-
-						// 优先检测设备
-						{
-							FCollisionObjectQueryParams ObjectQueryParams;
-							ObjectQueryParams.AddObjectTypesToQuery(Device_Object);
-							GetWorldImp()->LineTraceMultiByObjectType(
-							                                          OutHits,
-							                                          WorldLocation,
-							                                          WorldLocation + (
-								                                          WorldDirection * UGameOptions::GetInstance()
-								                                          ->LinetraceDistance),
-							                                          ObjectQueryParams
-							                                         );
-
-							for (const auto& Iter : OutHits)
-							{
-								if (Iter.GetActor())
-								{
-									if (Iter.GetActor()->IsHidden())
-									{
-										continue;
-									}
-
-									auto SpaceElementPtr = Cast<ASceneElement_DeviceBase>(Iter.GetActor());
-									if (!SpaceElementPtr)
-									{
-										continue;
-									}
-
-									USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
-										 USmartCitySuiteTags::Interaction_Area_ViewDevice,
-										 [this, SpaceElementPtr](
-										 const TSharedPtr<FDecoratorBase>& AreaDecoratorSPtr
-										 )
-										 {
-											 auto SpaceAreaDecoratorSPtr = DynamicCastSharedPtr<FViewDevice_Decorator>(
-												  AreaDecoratorSPtr
-												 );
-											 if (SpaceAreaDecoratorSPtr)
-											 {
-												 SpaceAreaDecoratorSPtr->SceneElementPtr = SpaceElementPtr;
-											 }
-										 }
-										);
-
-									return true;
-								}
-							}
-						}
-					}
-					break;
-				case EInteractionType::kSpace:
-					{
-						TArray<struct FHitResult> OutHits;
-
-						auto PCPtr = Cast<APlanetPlayerController>(
-						                                           GEngine->GetFirstLocalPlayerController(GetWorldImp())
-						                                          );
-
-						FVector2D MousePosition;
-						PCPtr->GetMousePosition(
-						                        MousePosition.X,
-						                        MousePosition.Y
-						                       );
-
-						FVector WorldLocation;
-						FVector WorldDirection;
-						PCPtr->DeprojectScreenPositionToWorld(
-						                                      MousePosition.X,
-						                                      MousePosition.Y,
-						                                      WorldLocation,
-						                                      WorldDirection
-						                                     );
-
-						// 检测区域
-						{
-							FCollisionObjectQueryParams ObjectQueryParams;
-							ObjectQueryParams.AddObjectTypesToQuery(Space_Object);
-
-							FCollisionQueryParams Params;
-
-							Params.bTraceComplex = true;
-
-							GetWorldImp()->LineTraceMultiByObjectType(
-							                                          OutHits,
-							                                          WorldLocation,
-							                                          WorldLocation + (
-								                                          WorldDirection * UGameOptions::GetInstance()
-								                                          ->LinetraceDistance),
-							                                          ObjectQueryParams,
-							                                          Params
-							                                         );
-
-							for (const auto& Iter : OutHits)
-							{
-								if (Iter.GetActor())
-								{
-									if (Iter.GetActor()->IsHidden())
-									{
-										continue;
-									}
-
-									auto SpaceElementPtr = Cast<ASceneElement_Space>(Iter.GetActor());
-									if (!SpaceElementPtr)
-									{
-										continue;
-									}
-
-									USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
-										 USmartCitySuiteTags::Interaction_Area_Space,
-										 [this, SpaceElementPtr](
-										 const TSharedPtr<FDecoratorBase>& AreaDecoratorSPtr
-										 )
-										 {
-											 auto SpaceAreaDecoratorSPtr = DynamicCastSharedPtr<FViewSpace_Decorator>(
-												  AreaDecoratorSPtr
-												 );
-											 if (SpaceAreaDecoratorSPtr)
-											 {
-												 SpaceAreaDecoratorSPtr->Floor = SpaceElementPtr->BelongFloor->FloorTag;
-												 SpaceAreaDecoratorSPtr->SceneElementPtr = SpaceElementPtr;
-											 }
-										 }
-										);
-
-									return true;
-								}
-							}
-						}
-					}
-					break;
-				}
-			}
-			else
-			{
-			}
-		}
-		break;
-	case EOperatorType::kNone:
-		break;
-	default: ;
-	}
-
-	USceneInteractionWorldSystem::GetInstance()->ClearFocus();
-
 	return false;
 }
 
@@ -1912,64 +1692,6 @@ void FFloor_Decorator::OnUpdateFilterComplete(
 			break;
 		}
 	}
-
-	for (const auto& FloorIter : UAssetRefMap::GetInstance()->FloorHelpers)
-	{
-		if (FloorIter.Value->FloorTag.MatchesTag(GetBranchDecoratorType()))
-		{
-			auto MessageSPtr = MakeShared<FMessageBody_SelectedFloor>();
-
-			for (auto Iter : FloorIter.Value->SceneElementCategoryMap)
-			{
-				if (Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_Soft))
-				{
-					TArray<AActor*> OutActors;
-					Iter.Value->GetAttachedActors(OutActors, true, true);
-
-					for (auto SpaceIter : OutActors)
-					{
-						auto PipePtr = Cast<ASceneElement_PWR_Pipe>(SpaceIter);
-						if (PipePtr)
-						{
-							MessageSPtr->PWR_PipeAry.Add(PipePtr);
-						}
-					}
-				}
-				if (Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_Space))
-				{
-					TArray<AActor*> OutActors;
-					Iter.Value->GetAttachedActors(OutActors, true, true);
-
-					for (auto SpaceIter : OutActors)
-					{
-						auto SpacePtr = Cast<ASceneElement_Space>(SpaceIter);
-						if (SpacePtr)
-						{
-							MessageSPtr->SpacesMap.Add(SpacePtr, SpacePtr->GetAllDevices());
-						}
-					}
-				}
-			}
-
-			MessageSPtr->FloorHelper = Cast<AFloorHelper>(FloorIter.Value.LoadSynchronous());
-			MessageSPtr->PresetBuildingCameraSeat = FloorIter.Value->GetPresetBuildingCameraSeat();
-
-			auto FloorHelper_ComputerPtr = Cast<AFloorHelper_Computer>(MessageSPtr->FloorHelper);
-			if (FloorHelper_ComputerPtr)
-			{
-				for (const auto& Iter : FloorHelper_ComputerPtr->ComputerNameMap_SameName)
-				{
-					for (const auto& SecondIter : Iter.Value.Names)
-					{
-						MessageSPtr->ExtentPresetBuildingCameraSeat.Add({SecondIter.Key, Iter.Key, SecondIter.Value});
-					}
-				}
-			}
-
-
-			UWebChannelWorldSystem::GetInstance()->SendMessage(MessageSPtr);
-		}
-	}
 }
 
 void FFloor_Decorator::Process()
@@ -1983,58 +1705,6 @@ void FFloor_Decorator::AdjustCamera() const
 	if (GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F13))
 	{
 		Floor = USmartCitySuiteTags::Interaction_Area_Floor_F13MultFunctionHall;
-	}
-
-	for (const auto& FloorIter : UAssetRefMap::GetInstance()->FloorHelpers)
-	{
-		if (FloorIter.Value->FloorTag.MatchesTagExact(Floor))
-		{
-			if (FloorIter.Value->DefaultBuildingCameraSeat.IsValid())
-			{
-				auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-				PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_CameraTransformByPawnViewer>(
-					 false,
-					 true,
-					 [FloorIter](
-					 UGT_CameraTransformByPawnViewer* GTPtr
-					 )
-					 {
-						 if (GTPtr)
-						 {
-							 GTPtr->
-								 ViewerPawnPtr
-								 = FloorIter.Value->DefaultBuildingCameraSeat.LoadSynchronous();
-						 }
-					 }
-					);
-				return;
-			}
-			else
-			{
-				auto Result = FloorIter.Value->GetCameraSeat(
-				                                             UGameOptions::GetInstance()->ViewFloorControlParam.ViewRot,
-				                                             UGameOptions::GetInstance()->ViewFloorControlParam.FOV
-				                                            );
-
-				auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-				PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_ModifyCameraTransform>(
-					 false,
-					 true,
-					 [Result](
-					 UGT_ModifyCameraTransform* GTPtr
-					 )
-					 {
-						 if (GTPtr)
-						 {
-							 GTPtr->TargetLocation = Result.Key.GetLocation();
-							 GTPtr->TargetRotation = Result.Key.GetRotation().Rotator();
-							 GTPtr->TargetTargetArmLength = Result.Value;
-						 }
-					 }
-					);
-				return;
-			}
-		}
 	}
 }
 
@@ -2412,27 +2082,6 @@ void FViewDevice_Decorator::OnUpdateFilterComplete(
 	)
 {
 	Super::OnUpdateFilterComplete(bIsOK, TaskPtr);
-
-	if (Building_Floor_Mask)
-	{
-	}
-	else
-	{
-		Building_Floor_Mask = GetWorldImp()->SpawnActor<ABuilding_Floor_Mask>(
-		                                                                      UAssetRefMap::GetInstance()->
-		                                                                      Building_Floor_MaskClass
-		                                                                     );
-	}
-	if (Building_Floor_Mask)
-	{
-		Building_Floor_Mask->SetFloor(SceneElementPtr->BelongFloor);
-	}
-
-	auto MessageSPtr = MakeShared<FMessageBody_SelectedDevice>();
-
-	MessageSPtr->DeviceIDAry.Add(SceneElementPtr->SceneElementID);
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageSPtr);
 }
 
 void FViewDevice_Decorator::Process()
@@ -2641,20 +2290,6 @@ void FViewDevice_Decorator::Process()
 
 void FViewDevice_Decorator::AdjustCamera() const
 {
-	auto PCPtr = Cast<APlanetPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_CameraTransformLocaterByID>(
-		 false,
-		 true,
-		 [this](
-		 UGT_CameraTransformLocaterByID* GTPtr
-		 )
-		 {
-			 if (GTPtr)
-			 {
-				 GTPtr->TargetDevicePtr = SceneElementPtr.Get();
-			 }
-		 }
-		);
 }
 
 TSet<FGameplayTag> FViewDevice_Decorator::GetFloorSet() const
@@ -3052,160 +2687,12 @@ void FViewSpace_Decorator::OnUpdateFilterComplete(
 	)
 {
 	Super::OnUpdateFilterComplete(bIsOK, TaskPtr);
-
-	if (Building_Floor_Mask)
-	{
-	}
-	else
-	{
-		Building_Floor_Mask = GetWorldImp()->SpawnActor<ABuilding_Floor_Mask>(
-		                                                                      UAssetRefMap::GetInstance()->
-		                                                                      Building_Floor_MaskClass
-		                                                                     );
-	}
-	if (Building_Floor_Mask)
-	{
-		Building_Floor_Mask->SetFloor(SceneElementPtr->BelongFloor);
-	}
-
-	auto MessageSPtr = MakeShared<FMessageBody_SelectedSpace>();
-
-	for (auto Iter : SceneElementPtr->GetAllDevices())
-	{
-		FMessageBody_SelectedSpace::FDeviceInfo DeviceInfo;
-
-		DeviceInfo.DeviceID = Iter->SceneElementID;
-		DeviceInfo.Type = Iter->DeviceTypeStr;
-
-		MessageSPtr->DeviceIDAry.Add(DeviceInfo);
-	}
-
-	MessageSPtr->SpaceName = SceneElementPtr->Category;
-
-	UWebChannelWorldSystem::GetInstance()->SendMessage(MessageSPtr);
 }
 
 bool FViewSpace_Decorator::Operation(
 	EOperatorType OperatorType
 	)
 {
-	Super::Operation(OperatorType);
-
-	switch (OperatorType)
-	{
-	case EOperatorType::kLeftMouseButton:
-	case EOperatorType::kRightMouseButton:
-		{
-			// 确认当前的模式
-			auto DecoratorSPtr =
-				DynamicCastSharedPtr<FInteraction_Decorator>(
-				                                             USceneInteractionWorldSystem::GetInstance()->
-				                                             GetDecorator(
-				                                                          USmartCitySuiteTags::Interaction_Interaction
-				                                                         )
-				                                            );
-			if (DecoratorSPtr)
-			{
-				switch (DecoratorSPtr->GetInteractionType())
-				{
-				case EInteractionType::kDevice:
-					{
-					}
-					break;
-				case EInteractionType::kSpace:
-					{
-						TArray<struct FHitResult> OutHits;
-
-						auto PCPtr = Cast<APlanetPlayerController>(
-						                                           GEngine->GetFirstLocalPlayerController(GetWorldImp())
-						                                          );
-
-						FVector2D MousePosition;
-						PCPtr->GetMousePosition(
-						                        MousePosition.X,
-						                        MousePosition.Y
-						                       );
-
-						FVector WorldLocation;
-						FVector WorldDirection;
-						PCPtr->DeprojectScreenPositionToWorld(
-						                                      MousePosition.X,
-						                                      MousePosition.Y,
-						                                      WorldLocation,
-						                                      WorldDirection
-						                                     );
-
-						// 检测区域
-						{
-							FCollisionObjectQueryParams ObjectQueryParams;
-							ObjectQueryParams.AddObjectTypesToQuery(Space_Object);
-
-							FCollisionQueryParams Params;
-
-							Params.bTraceComplex = true;
-
-							GetWorldImp()->LineTraceMultiByObjectType(
-							                                          OutHits,
-							                                          WorldLocation,
-							                                          WorldLocation + (
-								                                          WorldDirection * UGameOptions::GetInstance()
-								                                          ->LinetraceDistance),
-							                                          ObjectQueryParams,
-							                                          Params
-							                                         );
-
-							for (const auto& Iter : OutHits)
-							{
-								if (Iter.GetActor())
-								{
-									if (Iter.GetActor()->IsHidden())
-									{
-										continue;
-									}
-
-									auto SpaceElementPtr = Cast<ASceneElement_Space>(Iter.GetActor());
-									if (!SpaceElementPtr)
-									{
-										continue;
-									}
-
-									USceneInteractionWorldSystem::GetInstance()->SwitchInteractionArea(
-										 USmartCitySuiteTags::Interaction_Area_Space,
-										 [this, SpaceElementPtr](
-										 const TSharedPtr<FDecoratorBase>& AreaDecoratorSPtr
-										 )
-										 {
-											 auto SpaceAreaDecoratorSPtr = DynamicCastSharedPtr<FViewSpace_Decorator>(
-												  AreaDecoratorSPtr
-												 );
-											 if (SpaceAreaDecoratorSPtr)
-											 {
-												 SpaceAreaDecoratorSPtr->Floor = SpaceElementPtr->BelongFloor->FloorTag;
-												 SpaceAreaDecoratorSPtr->SceneElementPtr = SpaceElementPtr;
-											 }
-										 }
-										);
-
-									return true;
-								}
-							}
-						}
-					}
-					break;
-				}
-			}
-			else
-			{
-			}
-		}
-		break;
-	case EOperatorType::kNone:
-		break;
-	default: ;
-	}
-
-	USceneInteractionWorldSystem::GetInstance()->ClearFocus();
-
 	return false;
 }
 
@@ -3454,24 +2941,6 @@ void FViewSpace_Decorator::Process()
 
 void FViewSpace_Decorator::AdjustCamera() const
 {
-	auto PCPtr = Cast<APlanetPlayerController>(
-	                                           GEngine->GetFirstLocalPlayerController(GetWorldImp())
-	                                          );
-
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<
-		UGT_CameraTransformLocaterBySpace>(
-		                                   false,
-		                                   true,
-		                                   [this](
-		                                   UGT_CameraTransformLocaterBySpace* GTPtr
-		                                   )
-		                                   {
-			                                   if (GTPtr)
-			                                   {
-				                                   GTPtr->SpaceActorPtr = SceneElementPtr;
-			                                   }
-		                                   }
-		                                  );
 }
 
 TSet<FGameplayTag> FViewSpace_Decorator::GetFloorSet() const
@@ -3657,117 +3126,4 @@ void FViewSpecialArea_Decorator::Process()
 
 void FViewSpecialArea_Decorator::AdjustCamera()
 {
-	if (PreviousPtr)
-	{
-		PreviousPtr->QuitAllState();
-	}
-	PreviousPtr = nullptr;
-
-	auto PCPtr = Cast<APlanetPlayerController>(
-	                                           GEngine->GetFirstLocalPlayerController(GetWorldImp())
-	                                          );
-
-	if (ViewerPawnBasePtr.IsValid())
-	{
-		PCPtr->GameplayTasksComponentPtr->StartGameplayTask<
-			UGT_CameraTransformByPawnViewer>(
-			                                 false,
-			                                 true,
-			                                 [this](
-			                                 UGT_CameraTransformByPawnViewer* GTPtr
-			                                 )
-			                                 {
-				                                 if (GTPtr)
-				                                 {
-					                                 GTPtr->ViewerPawnPtr = ViewerPawnBasePtr.Get();
-				                                 }
-			                                 }
-			                                );
-	}
-	else
-	{
-		for (auto FloorIter : UAssetRefMap::GetInstance()->FloorHelpers)
-		{
-			if (
-				FloorIter.Key.MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor_F12JF) &&
-				FloorIter.Key.MatchesTag(AreaTag)
-			)
-			{
-				for (auto Iter : FloorIter.Value->SceneElementCategoryMap)
-				{
-					TArray<AActor*> OutActors;
-
-					Iter.Value->GetAttachedActors(OutActors, true, true);
-
-					for (auto ActorIter : OutActors)
-					{
-						if (ID.IsEmpty())
-						{
-							auto SceneElementBasePtr = Cast<ASceneElement_Computer>(ActorIter);
-							if (
-								SceneElementBasePtr &&
-								SceneElementBasePtr->DeviceTypeStr == Seat
-							)
-							{
-								const auto ViewSeat = SceneElementBasePtr->GetViewSeat();
-								PCPtr->GameplayTasksComponentPtr->StartGameplayTask<
-									UGT_CameraTransform>(
-									                     false,
-									                     true,
-									                     [this, ViewSeat](
-									                     UGT_CameraTransform* GTPtr
-									                     )
-									                     {
-										                     if (GTPtr)
-										                     {
-											                     GTPtr->TargetLocation = ViewSeat.Key.GetLocation();
-											                     GTPtr->TargetRotation = ViewSeat.Key.GetRotation().
-												                     Rotator();
-											                     GTPtr->TargetTargetArmLength = ViewSeat.Value;
-										                     }
-									                     }
-									                    );
-								SceneElementBasePtr->DisplayGroupWidget();
-								PreviousPtr = SceneElementBasePtr;
-
-								return;
-							}
-						}
-						else
-						{
-							auto SceneElementBasePtr = Cast<ASceneElement_Computer>(ActorIter);
-							if (SceneElementBasePtr &&
-							    SceneElementBasePtr->DeviceTypeStr == Name &&
-							    SceneElementBasePtr->Group == Group
-							)
-							{
-								const auto ViewSeat = SceneElementBasePtr->GetViewSeat();
-								PCPtr->GameplayTasksComponentPtr->StartGameplayTask<
-									UGT_CameraTransform>(
-									                     false,
-									                     true,
-									                     [this, ViewSeat](
-									                     UGT_CameraTransform* GTPtr
-									                     )
-									                     {
-										                     if (GTPtr)
-										                     {
-											                     GTPtr->TargetLocation = ViewSeat.Key.GetLocation();
-											                     GTPtr->TargetRotation = ViewSeat.Key.GetRotation().
-												                     Rotator();
-											                     GTPtr->TargetTargetArmLength = ViewSeat.Value;
-										                     }
-									                     }
-									                    );
-								SceneElementBasePtr->DisplayGroupWidget();
-								PreviousPtr = SceneElementBasePtr;
-
-								return;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 }
