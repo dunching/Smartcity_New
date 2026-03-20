@@ -26,7 +26,6 @@ void APlayerControllerBase::OnPossess(
 	Super::OnPossess(InPawn);
 
 	bool bIsNewPawn = (InPawn != GetPawn());
-
 	if (bIsNewPawn)
 	{
 	}

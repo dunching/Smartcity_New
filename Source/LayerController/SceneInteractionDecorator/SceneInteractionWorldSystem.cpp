@@ -21,6 +21,7 @@
 #include "SceneInteractionDecorator_Addtional.h"
 #include "PlayerControllerBase.h"
 #include "WebChannelWorldSystem.h"
+#include "LayerController/AsyncTaskSubSysteam/AsyncTaskSubSysteam.h"
 
 USceneInteractionWorldSystem* USceneInteractionWorldSystem::GetInstance()
 {
@@ -820,10 +821,7 @@ UGT_SwitchSceneElement_Base* USceneInteractionWorldSystem::UpdateFilter_Speacial
 
 void USceneInteractionWorldSystem::InitializeSceneActors()
 {
-	SCOPE_LOG_TIME_FUNC();
-
-	auto PCPtr = Cast<APlayerControllerBase>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
-	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_InitializeSceneActors>(
+	UAsyncTaskSubSysteam::GetInstance()->StartGameplayTask<UGT_InitializeSceneActors>(
 		 false,
 		 false,
 		 [this](

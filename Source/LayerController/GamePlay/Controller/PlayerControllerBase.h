@@ -8,6 +8,7 @@
 
 class UGTComponent;
 class UPixelStreamingInput;
+class UAsyncTaskSubSysteam;
 
 /**
  *
@@ -18,6 +19,8 @@ class LAYERCONTROLLER_API APlayerControllerBase :
 {
 	GENERATED_BODY()
 
+	friend UAsyncTaskSubSysteam;
+	
 public:
 
 	APlayerControllerBase(
@@ -29,9 +32,11 @@ public:
 		) override;
 
 	UPROPERTY()
-	TObjectPtr<UGTComponent> GameplayTasksComponentPtr = nullptr;
-
-	UPROPERTY()
 	TObjectPtr<UPixelStreamingInput> PixelStreamingInputPtr = nullptr;
+
+protected:
+	
+	UPROPERTY()
+	TObjectPtr<UGTComponent> GameplayTasksComponentPtr = nullptr;
 
 };
