@@ -5,11 +5,8 @@
 
 #include "CoreMinimal.h"
 
-class FQueued_SwitchSceneElement : public IQueuedWork
+class FThreadTaskBase
 {
 public:
 
-	virtual void DoThreadedWork() override;
-
-	virtual void Abandon() override;
 };

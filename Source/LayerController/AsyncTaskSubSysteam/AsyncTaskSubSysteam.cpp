@@ -12,3 +12,12 @@ UAsyncTaskSubSysteam* UAsyncTaskSubSysteam::GetInstance()
 										 )
 									);
 }
+
+void FQueued_SwitchSceneElement::DoThreadedWork()
+{
+}
+
+void FQueued_SwitchSceneElement::Abandon()
+{
+	delete this;
+}

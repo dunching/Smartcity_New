@@ -53,6 +53,12 @@ public:
 		);
 
 private:
+	
+	TQueue<FThreadTaskBase>TreadTaskQueue;
+	
+	TAtomic<uint8> CurrentUsedThreadNum = 0;
+	
+	const uint8 MaxThreadNum = 2;
 };
 
 template <typename GameplayTaskType>
@@ -88,6 +94,15 @@ GameplayTaskType* UAsyncTaskSubSysteam::AddGameplayDelayTask(
 	return nullptr;
 }
 
+class FQueued_SwitchSceneElement : public IQueuedWork
+{
+public:
+
+	virtual void DoThreadedWork() override;
+
+	virtual void Abandon() override;
+};
+
 template <typename ThreadTaskType>
 ThreadTaskType* UAsyncTaskSubSysteam::StartThreadTask(
 	bool bBreakRuntimeTask,
@@ -95,7 +110,16 @@ ThreadTaskType* UAsyncTaskSubSysteam::StartThreadTask(
 	const std::function<void(ThreadTaskType*)>& Func
 	)
 {
+	if (CurrentUsedThreadNum < MaxThreadNum)
+	{
+		GThreadPool->AddQueuedWork(new FQueued_SwitchSceneElement);
+		
+		++CurrentUsedThreadNum;
+	}
+	else
+	{
+		
+	}
 	
-	GThreadPool->AddQueuedWork();
 	return nullptr;
 }
