@@ -8,6 +8,8 @@
 
 class UDTMqttClient;
 
+struct FSceneElementProxy;
+
 /**
  * 
  */
@@ -18,4 +20,14 @@ class LAYERDATA_API USceneElementProxyManaggerSubSystem : public UWorldSubsystem
 
 public:
 	static USceneElementProxyManaggerSubSystem* GetInstance();
+	
+	/**
+	 * DeviceID
+	 */
+	TMap<FString, TSharedPtr<FSceneElementProxy>> DeviceIDMap;
+	
+	/**
+	 * BimID
+	 */
+	TMap<FString, TSharedPtr<FSceneElementProxy>> BimIDMap;
 };

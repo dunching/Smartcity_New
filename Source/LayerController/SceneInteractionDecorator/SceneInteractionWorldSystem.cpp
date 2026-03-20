@@ -5,9 +5,10 @@
 #include "Tools.h"
 #include "AssetRefMap.h"
 #include "DatasmithAssetUserData.h"
+#include "GameplayTaskHelper.h"
+#include "GTComponent.h"
 #include "MessageBody.h"
-#include "AssetRefMap.h"
-#include "PlayerGameplayTasks.h"
+#include "PixelStreamingUtils.h"
 #include "RouteMarker.h"
 #include "SceneElementBase.h"
 #include "SceneElement_DeviceBase.h"
@@ -18,6 +19,7 @@
 #include "TemplateHelper.h"
 #include "SceneElement_Space.h"
 #include "SceneInteractionDecorator_Addtional.h"
+#include "PlayerControllerBase.h"
 #include "WebChannelWorldSystem.h"
 
 USceneInteractionWorldSystem* USceneInteractionWorldSystem::GetInstance()
@@ -820,6 +822,50 @@ void USceneInteractionWorldSystem::InitializeSceneActors()
 {
 	SCOPE_LOG_TIME_FUNC();
 
+	auto PCPtr = Cast<APlayerControllerBase>(GEngine->GetFirstLocalPlayerController(GetWorldImp()));
+	PCPtr->GameplayTasksComponentPtr->StartGameplayTask<UGT_InitializeSceneActors>(
+		 false,
+		 false,
+		 [this](
+		 UGT_InitializeSceneActors* GTPtr
+		 )
+		 {
+			 if (GTPtr)
+			 {
+				 GTPtr->SceneInteractionWorldSystemPtr = this;
+
+				 GTPtr->OnEnd.AddLambda(
+				                        [](
+				                        auto
+				                        )
+				                        {
+
+											UWebChannelWorldSystem::GetInstance()->BindEvent();
+				                        	UPixelStreamingUtils::InitializeDeserializeStrategies();
+				                        }
+				                       );
+
+				 GTPtr->OnEnd.AddLambda(
+				                        [](
+				                        auto
+				                        )
+				                        {
+					                        FTSTicker::GetCoreTicker().AddTicker(
+						                         FTickerDelegate::CreateLambda(
+						                                                       [](
+						                                                       auto
+						                                                       )
+						                                                       {
+							                                                       return false;
+						                                                       }
+						                                                      ),
+						                         5.f
+						                        );
+				                        }
+				                       );
+			 }
+		 }
+		);
 }
 
 TWeakObjectPtr<ASceneElementBase> USceneInteractionWorldSystem::FindSceneActor(

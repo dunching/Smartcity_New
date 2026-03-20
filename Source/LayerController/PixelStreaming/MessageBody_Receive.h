@@ -10,8 +10,9 @@
 #include "Engine/World.h"
 
 #include "GameOptions.h"
+#include "MessageBody.h"
 
-#include "MessageBody.generated.h"
+#include "MessageBody_Receive.generated.h"
 
 class FDecoratorBase;
 class ASceneElement_Space;
@@ -21,49 +22,7 @@ class AFloorHelper;
 class AViewerPawnBase;
 
 USTRUCT()
-struct FMessageBody
-{
-	GENERATED_BODY()
-
-	FMessageBody();
-
-	virtual ~FMessageBody();
-
-	FString GetCMDName() const;
-
-public:
-	static FString CMD;
-
-	FString CMD_Name;
-
-	FGuid Guid;
-};
-
-#pragma region Receive
-USTRUCT()
-struct FMessageBody_Receive : public FMessageBody
-{
-	GENERATED_BODY()
-
-public:
-	virtual void Deserialize(
-		const FString& JsonStr
-		);
-
-	virtual void DoAction() const;
-
-	void WriteLog()const;
-protected:
-	bool bIsWriteLog = true;
-private:
-	
-	virtual void WriteLogDate(int32 &Day, int32& Hour)const;
-
-	FString CurrentJsonStr;
-};
-
-USTRUCT()
-struct FMessageBody_Receive_AdjustCameraSeat : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_AdjustCameraSeat : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -86,7 +45,7 @@ private:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_SwitchViewArea : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_SwitchViewArea : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -103,7 +62,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_SwitchMode : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_SwitchMode : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -120,7 +79,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_AdjustHour : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_AdjustHour : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -137,7 +96,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_AdjustWeather : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_AdjustWeather : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -154,7 +113,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateViewConfig : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateViewConfig : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -173,7 +132,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_LocaterDeviceByID : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_LocaterDeviceByID : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -190,7 +149,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_LocaterSpaceByID : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_LocaterSpaceByID : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -209,7 +168,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_SwitchInteractionType : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_SwitchInteractionType : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -226,7 +185,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateRadarInfo : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateRadarInfo : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -262,7 +221,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_SetRelativeTransoform : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_SetRelativeTransoform : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -281,7 +240,7 @@ public:
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateFloorDescription : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateFloorDescription : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -299,7 +258,7 @@ struct FMessageBody_Receive_UpdateFloorDescription : public FMessageBody_Receive
 };
 
 USTRUCT()
-struct FMessageBody_Receive_ViewSpeacialArea : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_ViewSpeacialArea : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -329,7 +288,7 @@ struct FMessageBody_Receive_ViewSpeacialArea : public FMessageBody_Receive
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateSceneElementParam : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateSceneElementParam : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -352,7 +311,7 @@ struct FMessageBody_Receive_UpdateSceneElementParam : public FMessageBody_Receiv
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateSceneElementParamByArea : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateSceneElementParamByArea : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -370,7 +329,7 @@ struct FMessageBody_Receive_UpdateSceneElementParamByArea : public FMessageBody_
 };
 
 USTRUCT()
-struct FMessageBody_Receive_SelectedDevices : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_SelectedDevices : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -387,7 +346,7 @@ struct FMessageBody_Receive_SelectedDevices : public FMessageBody_Receive
 };
 
 USTRUCT()
-struct FMessageBody_Receive_ClearSelectedDevices : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_ClearSelectedDevices : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -398,7 +357,7 @@ struct FMessageBody_Receive_ClearSelectedDevices : public FMessageBody_Receive
 };
 
 USTRUCT()
-struct FMessageBody_Receive_UpdateQueryDeviceToken : public FMessageBody_Receive
+struct LAYERCONTROLLER_API FMessageBody_Receive_UpdateQueryDeviceToken : public FMessageBody_Receive
 {
 	GENERATED_BODY()
 
@@ -414,154 +373,3 @@ struct FMessageBody_Receive_UpdateQueryDeviceToken : public FMessageBody_Receive
 	
 };
 
-#pragma endregion
-
-#pragma region Send
-USTRUCT()
-struct FMessageBody_Send : public FMessageBody
-{
-	GENERATED_BODY()
-
-public:
-	FString GetJsonString() const;
-
-	virtual TSharedPtr<FJsonObject> SerializeBody() const;
-
-	void WriteLog(const FString&CurrentJsonStr)const;
-protected:
-	virtual void WriteLogDate(int32 &Day, int32& Hour)const;
-
-	bool bIsWriteLog = true;
-};
-
-USTRUCT()
-struct FMessageBody_SelectedFloor : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_SelectedFloor();
-
-	TMap<ASceneElement_Space*, TSet<ASceneElement_DeviceBase*>> SpacesMap;
-
-	TArray<ASceneElement_PWR_Pipe*> PWR_PipeAry;
-
-	TObjectPtr<AFloorHelper> FloorHelper = nullptr;
-
-	TMap<FString, TSoftObjectPtr<AViewerPawnBase>> PresetBuildingCameraSeat;
-
-	/**
-	 * ID
-	 * 组
-	 * 名字
-	 */
-	TArray<TTuple<FString, FString, FString>> ExtentPresetBuildingCameraSeat;
-	
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_SelectedSpace : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_SelectedSpace();
-
-	FString SpaceName;
-
-	struct FDeviceInfo
-	{
-		FString Type;
-
-		FString DeviceID;
-	};
-
-	TArray<FDeviceInfo> DeviceIDAry;
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_SelectedDevice : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_SelectedDevice();
-
-	TArray<FString> DeviceIDAry;
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_ViewDevice : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_ViewDevice();
-
-	FString Type;
-
-	FString DeviceID;
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_ClickedMonitor : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_ClickedMonitor();
-
-	FString Type;
-
-	FString DeviceID;
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_ViewConfigChanged : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_ViewConfigChanged();
-
-	FViewConfig ViewConfig;
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_UE_Initialized : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_UE_Initialized();
-
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-USTRUCT()
-struct FMessageBody_UE_Tick : public FMessageBody_Send
-{
-	GENERATED_BODY()
-
-	FMessageBody_UE_Tick();
-
-	FString Text;
-
-	TSet<FString>ConnectedID;
-	
-protected:
-	virtual TSharedPtr<FJsonObject> SerializeBody() const override;
-};
-
-#pragma endregion

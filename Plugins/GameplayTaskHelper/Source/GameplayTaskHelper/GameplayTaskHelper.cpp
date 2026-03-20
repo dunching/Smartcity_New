@@ -6,9 +6,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/StaticMeshActor.h"
 
-FName UPlayerControllerGameplayTasksComponent::ComponentName = TEXT("PlayerControllerGameplayTasksComponent");
+FName UGTComponentBase::ComponentName = TEXT("PlayerControllerGameplayTasksComponent");
 
-void UPlayerControllerGameplayTasksComponent::OnGameplayTaskDeactivated(
+void UGTComponentBase::OnGameplayTaskDeactivated(
 	UGameplayTask& Task
 	)
 {

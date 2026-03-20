@@ -13,7 +13,7 @@
 class USceneComponent;
 
 /**
- * 门禁
+ * 特殊的、无法合并的、需要单独控制的
  */
 UCLASS()
 class BUILDINGTOOLS_API ASceneElementBase :

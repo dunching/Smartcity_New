@@ -5,16 +5,11 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "GameOptions.h"
-#include "PlayerGameplayTasks.h"
-#include "SceneInteractionDecorator_Area.h"
 #include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"
 #include "TemplateHelper.h"
-#include "TowerHelperBase.h"
-#include "ViewerPawnBase.h"
 #include "WeatherSystem.h"
 #include "Dynamic_WeatherBase.h"
-#include "LandScapeBase.h"
 
 void TourProcessor::FViewPeripheryProcessor::EnterAction()
 {

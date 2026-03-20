@@ -37,7 +37,7 @@ UCLASS(
 	BlueprintType,
 	Blueprintable
 )
-class GAMEPLAYTASKHELPER_API UPlayerControllerGameplayTasksComponent : public UGameplayTasksComponent
+class GAMEPLAYTASKHELPER_API UGTComponentBase : public UGameplayTasksComponent
 {
 	GENERATED_BODY()
 
@@ -47,22 +47,6 @@ public:
 	virtual void OnGameplayTaskDeactivated(
 		UGameplayTask& Task
 		) override;
-
-	template <typename GameplayTaskType>
-	GameplayTaskType* StartGameplayTask(
-		bool bBreakRuntimeTask,
-		bool bBreakCameraRuntimeTask,
-		const std::function<void(
-			GameplayTaskType*
-			)>& Func
-		);
-
-	template <typename GameplayTaskType>
-	GameplayTaskType* AddGameplayDelayTask(
-		const std::function<void(
-			GameplayTaskType*
-			)>& Func
-		);
 
 protected:
 	
@@ -77,7 +61,7 @@ class GAMEPLAYTASKHELPER_API UGameplayTaskBase : public UGameplayTask
 	GENERATED_BODY()
 
 public:
-	class UPlayerControllerGameplayTasksComponent;
+	class UGTComponentBase;
 
 	using FOnTaskComplete = TMulticastDelegate<void(
 		bool
@@ -150,100 +134,13 @@ class GAMEPLAYTASKHELPER_API UGT_RuntimeTask : public UGT_BatchStepBase
 public:
 };
 
-template <typename GameplayTaskType>
-GameplayTaskType* UPlayerControllerGameplayTasksComponent::StartGameplayTask(
-	bool bBreakRuntimeTask,
-	bool bBreakCameraRuntimeTask,
-	const std::function<void(
-		GameplayTaskType*
-		)>& Func
-	)
+UCLASS()
+class GAMEPLAYTASKHELPER_API UGT_RuntimeTask_Generic : public UGT_RuntimeTask
 {
-	if (bBreakRuntimeTask)
-	{
-		if constexpr (std::same_as<GameplayTaskType, UGT_InitializeSceneBase>)
-		{
-		}
-		else
-		{
-			const auto TempKnownTasks = KnownTasks;
-			for (auto Iter : TempKnownTasks)
-			{
-				if (Iter && Iter->IsA(UGT_RuntimeTask::StaticClass()))
-				{
-					Iter->EndTask();
-				}
-			}
-			
-			const auto TempDelayTasks = DelayTasks;
-			for (auto Iter : TempDelayTasks)
-			{
-				Iter->EndTask();
-			}
-			DelayTasks.Empty();
-		}
-	}
+	GENERATED_BODY()
 
-	if (bBreakCameraRuntimeTask)
-	{
-		if constexpr (std::same_as<GameplayTaskType, UGT_InitializeSceneBase>)
-		{
-		}
-		else
-		{
-			const auto TempKnownTasks = KnownTasks;
-			for (auto Iter : TempKnownTasks)
-			{
-				if (Iter && Iter->IsA(UGT_CameraTransform::StaticClass()))
-				{
-					Iter->EndTask();
-				}
-			}
-		}
-	}
-
-	if (KnownTasks.IsEmpty())
-	{
-	}
-	else
-	{
-	}
-
-	auto GameplayTaskPtr = UGameplayTask::NewTask<GameplayTaskType>(
-	                                                                TScriptInterface<
-		                                                                IGameplayTaskOwnerInterface>(
-		                                                                 this
-		                                                                )
-	                                                               );
-
-	if (Func)
-	{
-		Func(GameplayTaskPtr);
-	}
-
-	GameplayTaskPtr->ReadyForActivation();
-
-	return GameplayTaskPtr;
-}
-
-template <typename GameplayTaskType>
-GameplayTaskType* UPlayerControllerGameplayTasksComponent::AddGameplayDelayTask(
-	const std::function<void(GameplayTaskType*)>& Func
-	)
-{
-	auto GameplayTaskPtr = UGameplayTask::NewTask<GameplayTaskType>(
-																	TScriptInterface<
-																		IGameplayTaskOwnerInterface>(
-																		 this
-																		)
-																   );
-
-	if (Func)
-	{
-		Func(GameplayTaskPtr);
-	}
-
-	DelayTasks.Add(GameplayTaskPtr);
-
-	return GameplayTaskPtr;
-}
+public:
+	
+	TFunction<void()> Func;
+	
+};

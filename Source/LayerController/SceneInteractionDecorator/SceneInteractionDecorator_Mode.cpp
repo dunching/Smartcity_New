@@ -13,7 +13,6 @@
 #include "Dynamic_WeatherBase.h"
 #include "FireMark.h"
 #include "FloorHelper.h"
-#include "PlayerGameplayTasks.h"
 #include "SceneElement_PWR_Pipe.h"
 #include "TemplateHelper.h"
 #include "FloorHelperBase.h"
@@ -481,123 +480,6 @@ void FBatchControlMode_Decorator::OnUpdateFilterComplete(
 
 void FBatchControlMode_Decorator::Initial()
 {
-	SceneElementSet.Empty();
-
-	auto AreaDecoratorSPtr =
-		DynamicCastSharedPtr<FArea_Decorator>(
-		                                      USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-			                                       USmartCitySuiteTags::Interaction_Area
-			                                      )
-		                                     );
-
-	if (!AreaDecoratorSPtr)
-	{
-		return;
-	}
-
-
-	if (
-		AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_Floor)
-	)
-	{
-		auto ViewFloor_DecoratorSPtr = DynamicCastSharedPtr<FFloor_Decorator>(AreaDecoratorSPtr);
-
-		FloorTag = AreaDecoratorSPtr->GetBranchDecoratorType();
-
-		for (const auto& FloorIter : UAssetRefMap::GetInstance()->FloorHelpers)
-		{
-			if (FloorIter.Value->FloorTag.MatchesTag(FloorTag))
-			{
-				auto MessageSPtr = MakeShared<FMessageBody_SelectedFloor>();
-
-				for (auto Iter : FloorIter.Value->SceneElementCategoryMap)
-				{
-					if (
-						Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_Soft) ||
-						Iter.Key.MatchesTag(USmartCitySuiteTags::SceneElement_Category_Space)
-					)
-					{
-					}
-					else
-					{
-						continue;
-					}
-
-					TArray<AActor*> OutActors;
-					Iter.Value->GetAttachedActors(OutActors, true, true);
-
-					for (auto SpaceIter : OutActors)
-					{
-						auto SpacePtr = Cast<ASceneElement_Space>(SpaceIter);
-						if (SpacePtr)
-						{
-							const auto DevicesSet = SpacePtr->GetAllDevices();
-
-							for (const auto& DeviceIter : DevicesSet)
-							{
-								if (DeviceIter)
-								{
-									if (ExtensionParamMap.Contains(DeviceIter->DeviceTypeStr))
-									{
-										DeviceIter->UpdateExtensionParamMap(
-										                                    ExtensionParamMap[DeviceIter->
-											                                    DeviceTypeStr],
-										                                    false
-										                                   );
-									}
-									else
-									{
-										DeviceIter->UpdateExtensionParamMap(
-										                                    {},
-										                                    false
-										                                   );
-									}
-								}
-							}
-						}
-					}
-				}
-
-				return;
-			}
-		}
-	}
-
-	if (
-		AreaDecoratorSPtr->GetBranchDecoratorType().MatchesTag(USmartCitySuiteTags::Interaction_Area_Space)
-	)
-	{
-		auto ViewSpace_DecoratorSPtr = DynamicCastSharedPtr<FViewSpace_Decorator>(AreaDecoratorSPtr);
-
-		FloorTag = ViewSpace_DecoratorSPtr->SceneElementPtr->BelongFloor->FloorTag;
-
-		const auto DevicesSet = ViewSpace_DecoratorSPtr->SceneElementPtr->GetAllDevices();
-
-		SceneElementSet.Append(DevicesSet);
-
-		for (const auto& DeviceIter : DevicesSet)
-		{
-			if (DeviceIter)
-			{
-				if (ExtensionParamMap.Contains(DeviceIter->DeviceTypeStr))
-				{
-					DeviceIter->UpdateExtensionParamMap(
-					                                    ExtensionParamMap[DeviceIter->DeviceTypeStr],
-					                                    false
-					                                   );
-				}
-				else
-				{
-					DeviceIter->UpdateExtensionParamMap(
-					                                    {},
-					                                    false
-					                                   );
-				}
-			}
-		}
-
-		return;
-	}
 }
 
 void FBatchControlMode_Decorator::Process()

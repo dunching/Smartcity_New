@@ -30,7 +30,8 @@ public:
 
 	void BindEvent();
 
-	void InitializeDeserializeStrategies();
+	template <typename MSGType>
+	void AddMGSStrategy();
 
 	void SendMessage(
 		const TSharedPtr<FMessageBody_Send>& Message
@@ -46,6 +47,10 @@ public:
 	TSet<FPixelStreamingPlayerId>ConnetedPlayerIds;
 	
 private:
+	void OnInputAsync(
+		const FString& Descriptor
+		);
+	
 	UFUNCTION()
 	void OnConnectedToSignallingServerNative();
 
@@ -72,3 +77,10 @@ private:
 
 	FTimerHandle MessageTickTimerHandle;
 };
+
+template <typename MSGType>
+void UWebChannelWorldSystem::AddMGSStrategy()
+{
+		auto MessageSPtr = MakeShared<MSGType>();
+	DeserializeStrategiesMap.Add(MessageSPtr->GetCMDName(), MessageSPtr);
+}

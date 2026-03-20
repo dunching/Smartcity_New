@@ -32,6 +32,7 @@ public class LayerData : ModuleRules
         PublicIncludePaths.Add("LayerData/LayerData");
         PublicIncludePaths.Add("LayerData/PIxelStreaming");
         PublicIncludePaths.Add("LayerData/QueryDeviceInfoSubSystem");
+        PublicIncludePaths.Add("LayerData/LayerController/PixelStreaming/");
 
         PrivateDependencyModuleNames.AddRange(new string[] {
             // 引擎内容

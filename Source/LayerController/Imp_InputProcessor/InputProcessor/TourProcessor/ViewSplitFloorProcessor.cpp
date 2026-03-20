@@ -1,10 +1,6 @@
 #include "ViewSplitFloorProcessor.h"
 
-#include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-
 #include "GameOptions.h"
-#include "PlayerGameplayTasks.h"
 #include "SceneInteractionDecorator_Area.h"
 #include "SceneInteractionWorldSystem.h"
 #include "SmartCitySuiteTags.h"

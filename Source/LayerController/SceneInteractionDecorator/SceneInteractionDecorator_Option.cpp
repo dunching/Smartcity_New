@@ -71,19 +71,6 @@ void FInteraction_Decorator::UpdateViewConfig(
 	bool bIsTempora
 	)
 {
-	if (bIsTempora)
-	{
-		TemporaViewConfigAry = {InConfig};
-
-		auto MessageSPtr = MakeShared<
-			FMessageBody_ViewConfigChanged>();
-
-		MessageSPtr->ViewConfig = InConfig;
-	}
-	else
-	{
-		ViewConfig = {InConfig};
-	}
 }
 
 void FInteraction_Decorator::ClearTemporaViewConfig()

@@ -23,28 +23,10 @@ class SMARTCITY_API AGameMode_Main : public AGameModeBase
 
 public:
 
-	AGameMode_Main();
-	
-protected:
-
-	virtual void OnConstruction(const FTransform& Transform)override;
-
 	virtual void BeginPlay()override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason)override;
-
-	virtual void BeginDestroy()override;
 
 private:
 
-	void ProcessExternalWall();
-	
-	void ProcessFloor();
-	
-	void ProcessSpace();
-	
-	void ExcuteCMD();
-	
 	void OnHourChanged(int32 Hour);
 	
 };

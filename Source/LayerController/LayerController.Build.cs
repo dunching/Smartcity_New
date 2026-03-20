@@ -29,6 +29,7 @@ public class LayerController : ModuleRules
         PublicIncludePaths.Add("LayerController/SceneInteractionDecorator");
         PublicIncludePaths.Add("LayerController/PixelStreaming");
         PublicIncludePaths.Add("LayerController/GameplayTasks");
+        PublicIncludePaths.Add("LayerController/GamePlay/Controller");
 
         PrivateDependencyModuleNames.AddRange(new string[] {
             // 引擎内容

@@ -1,12 +1,5 @@
 #include "ViewSingleSpaceProcessor.h"
 
-#include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-
-#include "GameOptions.h"
-#include "PlayerGameplayTasks.h"
-#include "SceneInteractionWorldSystem.h"
-
 void TourProcessor::FViewSingleSpaceProcessor::EnterAction()
 {
 	FInputProcessor::EnterAction();

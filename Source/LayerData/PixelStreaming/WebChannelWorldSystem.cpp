@@ -11,6 +11,7 @@
 #include "Tools.h"
 #include "GameplayTagsLibrary.h"
 #include "PixelStreamingInputComponent.h"
+#include "MessageBody.h"
 
 UWebChannelWorldSystem* UWebChannelWorldSystem::GetInstance()
 {
@@ -37,18 +38,14 @@ void UWebChannelWorldSystem::BindEvent()
 	                                           );
 
 	Delegates->OnClosedConnectionNative.AddUObject(
-	                                            this,
-	                                            &ThisClass::OnClosedConnectionNative
-	                                           );
+	                                               this,
+	                                               &ThisClass::OnClosedConnectionNative
+	                                              );
 
 	Delegates->OnAllConnectionsClosed.AddDynamic(
 	                                             this,
 	                                             &ThisClass::OnAllConnectionsClosed
 	                                            );
-}
-
-void UWebChannelWorldSystem::InitializeDeserializeStrategies()
-{
 }
 
 void UWebChannelWorldSystem::SendMessage(
@@ -57,52 +54,7 @@ void UWebChannelWorldSystem::SendMessage(
 {
 }
 
-void UWebChannelWorldSystem::OnConnectedToSignallingServerNative()
-{
-}
-
-void UWebChannelWorldSystem::OnClosedConnectionNative(
-	FString Str,
-	FPixelStreamingPlayerId ID,
-	bool bIsTrue
-	)
-{
-	ConnetedPlayerIds.Remove(ID);
-}
-
-void UWebChannelWorldSystem::NewConnectionNative(
-	FString Str,
-	FPixelStreamingPlayerId ID,
-	bool bIsTrue
-	)
-{
-	ConnetedPlayerIds.Add(ID);
-	
-	if (MessageTickTimerHandle.IsValid())
-	{
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-		                                       MessageTickTimerHandle,
-		                                       this,
-		                                       &ThisClass::MessageTickImp,
-		                                       1.f,
-		                                       true
-		                                      );
-	}
-}
-
-void UWebChannelWorldSystem::OnAllConnectionsClosed(
-	FString StreamerId
-	)
-{
-	GetWorld()->GetTimerManager().ClearTimer(MessageTickTimerHandle);
-	
-	ConnetedPlayerIds.Empty();
-}
-
-void UWebChannelWorldSystem::OnInput(
+void UWebChannelWorldSystem::OnInputAsync(
 	const FString& Descriptor
 	)
 {
@@ -125,8 +77,85 @@ void UWebChannelWorldSystem::OnInput(
 	FJsonSerializer::Deserialize(
 	                             JsonReader,
 	                             jsonObject
-	                            );
+	                             );
 
+	if (jsonObject)
+	{
+		FString Name;
+		if (jsonObject->TryGetStringField(FMessageBody_Receive::CMD, Name))
+		{
+			if (DeserializeStrategiesMap.Contains(Name))
+			{
+				auto DeserializeStrategy = DeserializeStrategiesMap[Name];
+				
+				DeserializeStrategy->Deserialize(JsonStr);
+				DeserializeStrategy->DoAction();
+				
+				DeserializeStrategy->WriteLog();
+			}
+		}
+	}
+	else
+	{
+	}
+}
+
+void UWebChannelWorldSystem::OnConnectedToSignallingServerNative()
+{
+}
+
+void UWebChannelWorldSystem::OnClosedConnectionNative(
+	FString Str,
+	FPixelStreamingPlayerId ID,
+	bool bIsTrue
+	)
+{
+	ConnetedPlayerIds.Remove(ID);
+}
+
+void UWebChannelWorldSystem::NewConnectionNative(
+	FString Str,
+	FPixelStreamingPlayerId ID,
+	bool bIsTrue
+	)
+{
+	ConnetedPlayerIds.Add(ID);
+
+	if (MessageTickTimerHandle.IsValid())
+	{
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+		                                       MessageTickTimerHandle,
+		                                       this,
+		                                       &ThisClass::MessageTickImp,
+		                                       1.f,
+		                                       true
+		                                      );
+	}
+}
+
+void UWebChannelWorldSystem::OnAllConnectionsClosed(
+	FString StreamerId
+	)
+{
+	GetWorld()->GetTimerManager().ClearTimer(MessageTickTimerHandle);
+
+	ConnetedPlayerIds.Empty();
+}
+
+void UWebChannelWorldSystem::OnInput(
+	const FString& Descriptor
+	)
+{
+	Async(
+	      EAsyncExecution::ThreadPool,
+	      [Descriptor, this]()
+	      {
+	      	OnInputAsync(Descriptor);
+	      }
+	     );
 }
 
 void UWebChannelWorldSystem::MessageTickImp()

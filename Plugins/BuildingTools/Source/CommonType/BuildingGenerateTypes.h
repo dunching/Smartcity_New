@@ -22,7 +22,7 @@ struct BUILDINGTOOLS_API FMaterialsCache
 	TArray<UMaterialInterface*> MaterialsCacheAry;
 };
 
-struct FModelIndex
+struct BUILDINGTOOLS_API FModelIndex
 {
 	/**
 	 * 
