@@ -8,17 +8,23 @@
 #include "HumanProcessor.h"
 #include "PlayerControllerBase.h"
 
-#include "AsyncTaskSubSysteam.generated.h"
+#include "AsyncTaskInGameSubSysteam.generated.h"
 
-/**
+class FEvent;
+
+class IQueuedWork_ProcessTasks;
+class FTaskGroup;
+
+/*
+ *
  */
 UCLASS(BlueprintType, Blueprintable)
-class LAYERCONTROLLER_API UAsyncTaskSubSysteam : public UGameInstanceSubsystem
+class LAYERCONTROLLER_API UAsyncTaskInGameSubSysteam : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	static UAsyncTaskSubSysteam* GetInstance();
+	static UAsyncTaskInGameSubSysteam* GetInstance();
 
 	template <typename GameplayTaskType>
 	GameplayTaskType* StartGameplayTask(
@@ -42,34 +48,15 @@ public:
 			)>& Func
 		);
 
-
-	template <typename ThreadTaskType>
-	ThreadTaskType* StartThreadTask(
-		bool bBreakRuntimeTask,
-		bool bBreakCameraRuntimeTask,
-		const std::function<void(
-			ThreadTaskType*
-			)>& Func
-		);
-
 private:
-	
-	TQueue<FThreadTaskBase>TreadTaskQueue;
-	
-	TAtomic<uint8> CurrentUsedThreadNum = 0;
-	
-	const uint8 MaxThreadNum = 2;
 };
 
 template <typename GameplayTaskType>
-GameplayTaskType* UAsyncTaskSubSysteam::StartGameplayTask(
+GameplayTaskType* UAsyncTaskInGameSubSysteam::StartGameplayTask(
 	bool bBreakRuntimeTask,
 	bool bBreakCameraRuntimeTask,
 	const std::function<void(
 		GameplayTaskType*
-
-
-		
 		)>& Func
 	)
 {
@@ -82,7 +69,7 @@ GameplayTaskType* UAsyncTaskSubSysteam::StartGameplayTask(
 }
 
 template <typename GameplayTaskType>
-GameplayTaskType* UAsyncTaskSubSysteam::AddGameplayDelayTask(
+GameplayTaskType* UAsyncTaskInGameSubSysteam::AddGameplayDelayTask(
 	const std::function<void(
 		GameplayTaskType*
 
@@ -91,35 +78,5 @@ GameplayTaskType* UAsyncTaskSubSysteam::AddGameplayDelayTask(
 		)>& Func
 	)
 {
-	return nullptr;
-}
-
-class FQueued_SwitchSceneElement : public IQueuedWork
-{
-public:
-
-	virtual void DoThreadedWork() override;
-
-	virtual void Abandon() override;
-};
-
-template <typename ThreadTaskType>
-ThreadTaskType* UAsyncTaskSubSysteam::StartThreadTask(
-	bool bBreakRuntimeTask,
-	bool bBreakCameraRuntimeTask,
-	const std::function<void(ThreadTaskType*)>& Func
-	)
-{
-	if (CurrentUsedThreadNum < MaxThreadNum)
-	{
-		GThreadPool->AddQueuedWork(new FQueued_SwitchSceneElement);
-		
-		++CurrentUsedThreadNum;
-	}
-	else
-	{
-		
-	}
-	
 	return nullptr;
 }

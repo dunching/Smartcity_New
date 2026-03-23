@@ -3,12 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
-
-#include <AIController.h>
 
 #include "HumanCharacter_AI.h"
 #include "PlanetControllerInterface.h"
+#include "PlayerControllerBase.h"
 
 #include "PlanetPlayerController.generated.h"
 
@@ -20,7 +18,7 @@ class UPixelStreamingInput;
  */
 UCLASS()
 class SMARTCITY_API APlanetPlayerController :
-	public APlayerController,
+	public APlayerControllerBase,
 	public IPlanetControllerInterface
 {
 	GENERATED_BODY()

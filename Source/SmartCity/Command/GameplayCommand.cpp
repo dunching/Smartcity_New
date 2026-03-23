@@ -2,8 +2,10 @@
 
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 
 #include "AssetRefMap.h"
+#include "AsyncTaskInThreadSubSysteam.h"
 #include "DatasmithAssetUserData.h"
 #include "ElevatorSubSystem.h"
 #include "GameplayTagsLibrary.h"
@@ -17,8 +19,8 @@
 #include "SceneInteractionDecorator_Area.h"
 #include "SceneInteractionDecorator_Mode.h"
 #include "SmartCitySuiteTags.h"
+#include "TT_SwitchSceneElement.h"
 #include "WebChannelWorldSystem.h"
-#include "Kismet/KismetStringLibrary.h"
 
 void SmartCityCommand::ReplyCameraTransform()
 {
@@ -541,9 +543,9 @@ void SmartCityCommand::UpdateAccessControl(
 {
 	if (Args.Num() < 3)
 	{
-		return;	
+		return;
 	}
-	
+
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorldImp(), ASceneElementManagger_AccessControl::StaticClass(), OutActors);
 
@@ -557,7 +559,7 @@ void SmartCityCommand::UpdateAccessControl(
 			ExtensionParamMap.Add(TEXT("Floor"), Args[0]);
 			ExtensionParamMap.Add(TEXT("Group"), Args[1]);
 			ExtensionParamMap.Add(TEXT("State"), Args[2]);
-			
+
 			SceneElementManagger_AccessControlPtr->UpdateExtensionParamMap(ExtensionParamMap, true);
 		}
 	}
@@ -571,26 +573,27 @@ void SmartCityCommand::AddTemperaturePt(
 	{
 		auto AreaDecoratorSPtr =
 			DynamicCastSharedPtr<FTemperatureMapMode_Decorator>(
-												  USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-													   USmartCitySuiteTags::Interaction_Mode
-													  )
-												 );
+			                                                    USceneInteractionWorldSystem::GetInstance()->
+			                                                    GetDecorator(
+			                                                                 USmartCitySuiteTags::Interaction_Mode
+			                                                                )
+			                                                   );
 
 		if (AreaDecoratorSPtr)
 		{
 			FVector Vec;
 
-			LexFromString(Vec.X,Args[0]);
-			LexFromString(Vec.Y,Args[1]);
-			LexFromString(Vec.Z,Args[2]);
+			LexFromString(Vec.X, Args[0]);
+			LexFromString(Vec.Y, Args[1]);
+			LexFromString(Vec.Z, Args[2]);
 
-			
+
 			float Distance;
 			float Value;
-			LexFromString(Distance,Args[3]);
-			LexFromString(Value,Args[4]);
-			
-			AreaDecoratorSPtr->AddPoint(Vec,Distance,Value);
+			LexFromString(Distance, Args[3]);
+			LexFromString(Value, Args[4]);
+
+			AreaDecoratorSPtr->AddPoint(Vec, Distance, Value);
 		}
 	}
 }
@@ -601,10 +604,10 @@ void SmartCityCommand::ClearTemperaturePt(
 {
 	auto AreaDecoratorSPtr =
 		DynamicCastSharedPtr<FTemperatureMapMode_Decorator>(
-											  USceneInteractionWorldSystem::GetInstance()->GetDecorator(
-												   USmartCitySuiteTags::Interaction_Mode_TemperatureMap
-												  )
-											 );
+		                                                    USceneInteractionWorldSystem::GetInstance()->GetDecorator(
+			                                                     USmartCitySuiteTags::Interaction_Mode_TemperatureMap
+			                                                    )
+		                                                   );
 
 	if (AreaDecoratorSPtr)
 	{
@@ -617,14 +620,47 @@ void SmartCityCommand::TestMsg(
 	)
 {
 	FTimerHandle Handle;
-	GetWorldImp()->GetTimerManager().SetTimer(Handle, []()
+	GetWorldImp()->GetTimerManager().SetTimer(
+	                                          Handle,
+	                                          []()
+	                                          {
+		                                          if (UAssetRefMap::GetInstance()->ParamJson.Contains(
+			                                           TEXT("UpdateSceneElementParamByArea5")
+			                                          ))
+		                                          {
+			                                          UWebChannelWorldSystem::GetInstance()->OnInput(
+				                                           UAssetRefMap::GetInstance()->ParamJson[TEXT(
+					                                            "UpdateSceneElementParamByArea5"
+					                                           )]
+				                                          );
+		                                          }
+	                                          },
+	                                          5.f,
+	                                          true
+	                                         );
+}
+
+int32 TestThreadTaskCount = 0;
+
+void SmartCityCommand::AddTestThreadTask()
+{
+	FThreadTaskFunction ThreadTaskFunction;
+
+	ThreadTaskFunction.Func = []
 	{
-		
-		if (UAssetRefMap::GetInstance()->ParamJson.Contains(TEXT("UpdateSceneElementParamByArea5")))
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		TestThreadTaskCount++;
+
+		if (TestThreadTaskCount > 10)
 		{
-			UWebChannelWorldSystem::GetInstance()->OnInput(
-														   UAssetRefMap::GetInstance()->ParamJson[TEXT("UpdateSceneElementParamByArea5")]
-														  );
+			return true;
 		}
-	}, 5.f,true);
+		else
+		{
+			return false;
+		}
+	};
+
+	UAsyncTaskInThreadSubSysteam::GetInstance()->StartThreadTask(true, true, ThreadTaskFunction);
 }

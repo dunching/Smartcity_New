@@ -27,6 +27,7 @@ public class LayerController : ModuleRules
         PublicIncludePaths.Add("LayerController/Imp_InputProcessor/InputProcessor/TourProcessor");
         PublicIncludePaths.Add("LayerController/SceneInteractionDecorator");
         PublicIncludePaths.Add("LayerController/PixelStreaming");
+        PublicIncludePaths.Add("LayerController/AsyncTaskSubSysteam");
         PublicIncludePaths.Add("LayerController/AsyncTaskSubSysteam/GameplayTasks");
         PublicIncludePaths.Add("LayerController/AsyncTaskSubSysteam/ThreadTasks");
         PublicIncludePaths.Add("LayerController/GamePlay/Controller");

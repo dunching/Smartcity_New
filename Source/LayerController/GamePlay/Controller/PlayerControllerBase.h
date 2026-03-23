@@ -8,7 +8,8 @@
 
 class UGTComponent;
 class UPixelStreamingInput;
-class UAsyncTaskSubSysteam;
+class UAsyncTaskInGameSubSysteam;
+class UAsyncTaskInThreadSubSysteam;
 
 /**
  *
@@ -19,7 +20,8 @@ class LAYERCONTROLLER_API APlayerControllerBase :
 {
 	GENERATED_BODY()
 
-	friend UAsyncTaskSubSysteam;
+	friend UAsyncTaskInGameSubSysteam;
+	friend UAsyncTaskInThreadSubSysteam;
 	
 public:
 
